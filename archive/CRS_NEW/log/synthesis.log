@@ -1,0 +1,32 @@
+user:> Recommend me a movie to watch tonight.
+intent: recommend
+assistant:> I recommend watching "Onward" (2020). Since you haven't provided specific preferences, "Onward" is a safe choice as it is a family-friendly animated film with an engaging story about two elf brothers on a magical adventure. It has a good balance of action, comedy, and heartfelt moments that can be enjoyed by a wide range of audiences.
+user:> 
+user:> Recommend me a movie to watch tonight.
+intent: recommend
+assistant:> I recommend watching "Onward" (2020). Based on your dialog history, you seem to enjoy animated films with a blend of adventure and emotion. "Onward" is a heartwarming Pixar film about two brothers on a magical quest to spend one more day with their late father, filled with both laughter and tears.
+user:> 
+intent: recommend
+assistant:> I hope you enjoy watching "Onward" tonight! It's a fantastic choice for an entertaining and emotional movie experience. Have a great time!
+user:> Summarize the plot of Onward without giving away spoilers.
+intent: summarize
+assistant:> Key info: Onward is a 2020 animated movie set in a suburban fantasy world, directed by Dan Scanlon, and featuring the voices of Tom Holland, Chris Pratt, Julia Louis-Dreyfus, and Octavia Spencer.
+
+Plot summary: In a world where magic has mostly been forgotten, two teenage elf brothers embark on an extraordinary quest to discover if there's still magic left out there. Their journey is filled with challenges and adventures, as they bond and learn to rely on each other to unravel the mysteries of their magical heritage and achieve their goal.
+
+I hope this provides a good idea of what to expect without spoiling the experience! Enjoy watching "Onward" tonight!
+user:> 
+intent: summarize
+assistant:> Thank you! If you have any more questions or need further recommendations, feel free to ask. I'm here to help. Enjoy your movie night!
+user:> Summarize the plot of Onward without giving away spoilers.
+intent: summarize
+assistant:> In "Onward," a 2020 animated film set in a suburban fantasy world, magic has mostly faded away due to the convenience of modern technology. Two teenage elf brothers, voiced by Tom Holland and Chris Pratt, discover a spell that could allow them to spend one more day with their late father, whom they barely knew. The brothers embark on an extraordinary quest to find a rare magical artifact needed to complete the spell. Along the way, they encounter various challenges, bond more closely as siblings, and learn more about the importance of family and the magical heritage that still exists within their world.
+user:> Can you also give me a brief overview of another movie, Bloodshot?
+intent: summarize
+assistant:> Key info: "Bloodshot" is a 2020 action, drama, and sci-fi film directed by Dave Wilson, starring Vin Diesel, Eiza González, Sam Heughan, and Toby Kebbell.
+
+Plot summary: Ray Garrison, a slain soldier, is brought back to life by a secret organization using advanced nanotechnology. The cutting-edge procedure imbues him with superhuman strength, regenerative powers, and the ability to shape-shift. As he tries to piece together his past, Ray discovers the organization controlling him has sinister motives. He must ultimately uncover the truth about his resurrection, take control of his own destiny, and confront the powerful forces that seek to manipulate him.
+
+"Bloodshot" is a thrilling film that combines action, drama, and sci-fi elements for an exciting movie experience.
+user:> Can you also give me a brief overview of another movie, Bloodshot?
+intent: summarize

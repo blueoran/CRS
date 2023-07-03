@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "chat_history_sum": {
+            "type": "string",
+            "additionalProperties": false
+
+        }
+    },
+    "required": ["chat_history_sum"]
+}

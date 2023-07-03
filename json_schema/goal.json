@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "goal": {
+            "type": "string",
+            "additionalProperties": false
+
+        }
+    },
+    "required": ["goal"]
+}

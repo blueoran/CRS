@@ -1,0 +1,11 @@
+{
+
+    "type": "object",
+    "properties": {
+        "key_features": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+        "required": ["key_features"]
+}

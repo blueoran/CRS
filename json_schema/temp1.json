@@ -1,0 +1,10 @@
+{
+
+    "type": "object",
+        "respons": {
+            "type": "string",
+            "description": "thoughts result to meet system role's requirements"
+        },
+        "required": ["result"],
+        "additionalProperties": false
+}

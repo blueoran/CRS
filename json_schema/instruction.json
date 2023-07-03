@@ -1,0 +1,10 @@
+{
+
+    "type": "object",
+    "properties": {
+        "goal_instruction": {
+            "type": "string"
+        }
+    },
+    "required": ["goal_instruction"]
+}

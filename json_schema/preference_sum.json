@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "preference_summary": {
+            "type": "string",
+            "additionalProperties": false
+
+        }
+    },
+    "required": ["preference_summary"]
+}

@@ -1,0 +1,11 @@
+{
+
+    "type": "object",
+    "properties": {
+        "question_for_preference": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+        "required": ["question_for_preference"]
+}
