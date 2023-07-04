@@ -185,4 +185,5 @@ Output:
 ```
 
 
-
+key_feature can not do help to perform accurate retrieval (e.g. movies that specified the published year)
+can be solved by adding a query to chatgpt for whether use the key_feature or more detailed information to do retrival

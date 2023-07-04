@@ -1,0 +1,22 @@
+{
+    "type": "object",
+    "Necessary_Products": {
+        "Product1": {
+            "type": "string",
+            "additionalProperties": false
+        },
+        "Product2": {
+            "type": "string",
+            "additionalProperties": false
+        },
+        "Product3": {
+            "type": "string",
+            "additionalProperties": false
+        },
+        "Product4": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+    "required": ["Product1","Product2","Product3","Product4"]
+}

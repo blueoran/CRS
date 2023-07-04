@@ -14,28 +14,28 @@ LLM_DEFAULT_RESPONSE_FORMAT = "llm_response_format_1"
 def extract_json_from_response(response_content: str) -> dict:
     # Sometimes the response includes the JSON in a code block with ```
     response_content=response_content.replace('true','True').replace('false','False').replace('\n','')
-    contents=response_content.strip('\n }{').split(',')
-    # print(contents)
-    content=[]
-    neirong=""
-    attr=""
-    for c in contents:
-        if len(c.split(':'))==1:
-            neirong+=','+c
-            continue
-        ori_attr=attr
-        ori_neirong=neirong
-        attr=c.split(':')[0].split(' ')[-1]
-        neirong=':'.join(c.split(':')[1:])
-        ori_attr=ori_attr.strip('\'\" \n').replace('\"','').replace('\'','')
-        ori_neirong+=' '.join(c.split(':')[0].split(' ')[:-1])
-        ori_neirong=ori_neirong.strip('\'\" \n').replace('\"','').replace('\'','')
-        if ori_attr!="":
-            content.append(f'\"{ori_attr}\": \"{ori_neirong}\"')
-    attr=attr.strip('\'\" \n').replace('\"','').replace('\'','')
-    neirong=neirong.strip('\'\" \n').replace('\"','').replace('\'','')
-    content.append(f'\"{attr}\": \"{neirong}\"')
-    response_content='{ '+', '.join(content)+' }'
+    # contents=response_content.strip('\n }{').split(',')
+    # # print(contents)
+    # content=[]
+    # neirong=""
+    # attr=""
+    # for c in contents:
+    #     if len(c.split(':'))==1:
+    #         neirong+=','+c
+    #         continue
+    #     ori_attr=attr
+    #     ori_neirong=neirong
+    #     attr=c.split(':')[0].split(' ')[-1]
+    #     neirong=':'.join(c.split(':')[1:])
+    #     ori_attr=ori_attr.strip('\'\" \n').replace('\"','').replace('\'','')
+    #     ori_neirong+=' '.join(c.split(':')[0].split(' ')[:-1])
+    #     ori_neirong=ori_neirong.strip('\'\" \n').replace('\"','').replace('\'','')
+    #     if ori_attr!="":
+    #         content.append(f'\"{ori_attr}\": \"{ori_neirong}\"')
+    # attr=attr.strip('\'\" \n').replace('\"','').replace('\'','')
+    # neirong=neirong.strip('\'\" \n').replace('\"','').replace('\'','')
+    # content.append(f'\"{attr}\": \"{neirong}\"')
+    # response_content='{ '+', '.join(content)+' }'
     response_content=response_content.replace('\"True\"','True').replace('\"False\"','False')
     # .replace('\'','\"')
     # response_content = re.sub(r"':([^']+)'", r'\1', response_content)
@@ -50,9 +50,8 @@ def extract_json_from_response(response_content: str) -> dict:
         return ast.literal_eval(response_content)
     except BaseException as e:
         # print(f"Error parsing JSON response with literal_eval {e}")
-        # logger.error(f"Error parsing JSON response with literal_eval {e}")
         # TODO: How to raise an error here without causing the program to exit?
-        return {}
+        raise e
 
 
 def llm_response_schema(
