@@ -1,0 +1,10 @@
+{
+    "type": "object",
+    "properties": {
+    "activate_recommender":{
+        "type":"boolean",
+        "additionalProperties": false
+    }
+},
+    "required": ["activate_recommender"]
+}

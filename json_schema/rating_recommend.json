@@ -1,0 +1,11 @@
+{
+
+    "type": "object",
+    "properties": {
+        "recommend score":{
+            "type": "integer",
+            "additionalProperties": false
+        }
+    },
+        "required": ["recommend score"]
+}

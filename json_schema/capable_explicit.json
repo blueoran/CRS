@@ -1,0 +1,16 @@
+{
+
+    "type": "object",
+    "properties": {
+        "capable": {
+            "type": "boolean",
+            "description": "whether the recommendation system is capable for the user's desired recommendations",
+            "additionalProperties": false
+        },
+        "reasons": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+        "required": ["capable","reasons"]
+}

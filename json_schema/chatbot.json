@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "response": {
+            "type": "string",
+            "description": "decent response to the user's input",
+            "additionalProperties": false
+        }
+    },
+        "required": ["response"]
+}

@@ -1,0 +1,11 @@
+{
+
+    "type": "object",
+    "properties": {
+        "consistency score":{
+            "type": "integer",
+            "additionalProperties": false
+        }
+    },
+        "required": ["consistency score"]
+}

@@ -1,0 +1,15 @@
+{
+
+    "type": "object",
+    "properties": {
+        "recommend score":{
+            "type": "integer",
+            "additionalProperties": false
+        },
+        "scoring reasons": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+        "required": ["recommend score","scoring reasons"]
+}

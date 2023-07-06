@@ -2,10 +2,14 @@
 
     "type": "object",
     "properties": {
+        "product_type":{
+            "type": "string",
+            "additionalProperties": false
+        },
         "key_features": {
             "type": "string",
             "additionalProperties": false
         }
     },
-        "required": ["key_features"]
+        "required": ["product_type","key_features"]
 }

@@ -1,0 +1,15 @@
+{
+
+    "type": "object",
+    "properties": {
+        "consistency score":{
+            "type": "integer",
+            "additionalProperties": false
+        },
+        "scoring reasons": {
+            "type": "string",
+            "additionalProperties": false
+        }
+    },
+        "required": ["consistency score","scoring reasons"]
+}
