@@ -74,7 +74,9 @@ class Agent:
         product_detail_path="./data/summary.json",
         log_level=logging.DEBUG,
         explicit=False,
+        verbose=False
     ):
+        self.verbose=verbose
         self.products = products
         for product in self.products:
             product["description"] = product.apply(
@@ -106,9 +108,9 @@ class Agent:
                 self.product_detail = products_infos["product_detail"]
                 self.product_type_set = set(products_infos["product_type_set"])
                 self.product_type = products_infos["product_type"]
-                self.product_info.loc[:, "type"] = self.product_type
             if sum([len(x) for x in self.products]) == len(self.product_detail):
                 load = True
+                self.product_info.loc[:, "type"] = self.product_type
 
         if load is False:
             self.product_detail = []
@@ -142,7 +144,9 @@ class Agent:
                     },
                     f,
                 )
-        print(self.product_detail)
+                
+        if self.verbose:
+            print(self.product_detail)
 
         self.resource_dict = {i: "" for i in resource_list}
         self.resource_dict["product_details"] = "\n".join(self.product_detail)
@@ -227,7 +231,8 @@ class Agent:
             assistant_reply_json = self.chat(message_send, schema_name, **kwargs)
             time.sleep(1)
         assistant_reply_json = assistant_reply_json["val"]
-        print(assistant_reply_json)
+        if self.verbose:
+            print(assistant_reply_json)
         if concerened_key is not None:
             try:
                 if concerened_key in assistant_reply_json.keys():
@@ -283,7 +288,7 @@ class Agent:
                     
                     capable = self.json_chat(
                         f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
-                        "capable",
+                        "capable_explicit",
                         "",
                         "capable",
                     )
@@ -330,7 +335,7 @@ class Agent:
                         
                         capable = self.json_chat(
                             f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
-                            "capable",
+                            "capable_explicit",
                             "",
                             "capable",
                         )
@@ -384,7 +389,8 @@ class Agent:
                         "preference_summary",
                         strict_mode=False,
                     )
-                    print(f"User Preference: {self.resource_dict['user_preference']}")
+                    if self.verbose:
+                        print(f"User Preference: {self.resource_dict['user_preference']}")
                 # self.ask_preference=False
 
                 goal = self.json_chat(
