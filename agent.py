@@ -474,3 +474,115 @@ class Agent:
             print(f"System: {self.output}")
             self.context.append(f"System: {self.output}")
             print(f"Time elapsed: {time.time()-start_time}")
+    def user_interactive(self,user_message):
+        self.context_string = "\n".join(self.context[-6:])
+        self.user_message = user_message
+        start_time = time.time()
+        self.context.append(f"User: {self.user_message}")
+
+        self.status = self.recommend_fst(self.status)
+
+        if self.status == "Chatbot":
+            self.output = self.json_chat(
+                f"{CHAT_PROMPT}\nChat History:\n{self.context_string}",
+                "chatbot",
+                self.user_message,
+                "response",
+            )
+
+        elif self.status == "Recommend":
+            # if self.ask_preference==True:
+            if len(self.context) > 1:
+                self.resource_dict["user_preference"] = self.json_chat(
+                    f"{SYSTEM_PROMPT}\n{UPDATE_USER_PREFERENCE_PROMPT}\nOriginal {'user_preference'}: {self.resource_dict['user_preference']}\n\nChat History:\n{self.context_string}\n",
+                    "preference_sum",
+                    self.user_message,
+                    "preference_summary",
+                    strict_mode=False,
+                )
+                if self.verbose:
+                    print(f"User Preference: {self.resource_dict['user_preference']}")
+            # self.ask_preference=False
+
+            goal = self.json_chat(
+                f"{SYSTEM_PROMPT}\n{GOAL_PROMPT}\nChat History:\n{self.context_string}\n{self.context[-1]}",
+                "goal",
+                "",
+            )["goal"]
+            # print(f"Goal:{goal}")
+            instruction = self.json_chat(
+                f"{SYSTEM_PROMPT}\n{ACHIEVE_PROMPT} {goal}? Please describe as short ang specific as possible",
+                "instruction",
+                "",
+                "goal_instruction",
+                strict_mode=False,
+                max_tokens=50,
+            )
+            # print(f"Instrction:{instruction}")
+            required_resource = self.json_chat(
+                f"{SYSTEM_PROMPT}\n{RESOURCES_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nChat History:\n{self.context_string}\n{self.context[-1]}\n",
+                "required_resource",
+                "",
+            )
+            # print(f"Required Resource:{required_resource}")
+
+            # for k in required_resource.keys():
+            #     if required_resource[k]==True:
+            #         resource_dict[k]=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nChat History:\n{self.context_string}\n",'resource',self.user_message)[k]
+
+            # required_resource={k:True if k in required_resource else k:False for k in re}
+            
+            required_resource={x:True if required_resource[x]=="True" or required_resource[x]==True else False for x in required_resource}
+            if (
+                required_resource["need_user_preference"] == True
+            ):  # need user's specified information
+                resources = "\n".join(
+                    [f"{k}:{v}" for k, v in self.resource_dict.items()]
+                )
+                self.output = self.json_chat(
+                    f"{SYSTEM_PROMPT}\n{USER_PREFERENCE_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:\n\n{resources}",
+                    "preference",
+                    self.user_message,
+                    "question_for_preference",
+                )
+                # self.ask_preference=True
+            else:
+                resources = (
+                    "User Preference: " + self.resource_dict["user_preference"]
+                )
+                if required_resource["need_whole_chat_histories"] == True:
+                    whole_context_string = "\n".join(self.context)
+                    resources += f"\n\nWhole Chat History:\n{whole_context_string}"
+                    # self.resource_dict['whole_chat_histories']=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nResources:{resources}\n\nWhole Chat History:\n{whole_context_string}\nYou should summarize the {'whole_chat_histories'}",'chat_history',self.user_message)['chat_history_sum']
+
+                if required_resource["need_product_details"] == True:
+                    selected_products = self.json_chat(
+                        f"{SYSTEM_PROMPT}\n{PRODUCT_SELECTION_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\n\nProduct Key Features:{self.resource_dict['product_details']}\n\nResources:{resources}\nContext: {self.context_string}",
+                        "product_select",
+                        "",
+                        max_tokens=300,
+                    )["Necessary_Products"]
+                    # print(selected_products)
+                    from fuzzywuzzy import process
+
+                    product_string = ""
+                    for p in selected_products.keys():
+                        best_match = process.extractOne(
+                            selected_products[p], self.product_name
+                        )
+                        product_string += f"\n{best_match[0]}: {self.product_info[self.product_info['title']==best_match[0]]['description'].values[0]}"
+
+                    resources += f"\n\nWhole product details:\n{product_string}"
+
+                self.output = self.json_chat(
+                    f"{SYSTEM_PROMPT}\n{RECOMMEND_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:{resources}\nContext: {self.context_string}",
+                    "response",
+                    self.user_message,
+                    "response",
+                    max_tokens=200,
+                )
+
+        print(f"System: {self.output}")
+        self.context.append(f"System: {self.output}")
+        print(f"Time elapsed: {time.time()-start_time}")
+        return self.output
