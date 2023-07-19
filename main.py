@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description = 'test')
 
 parser.add_argument('--top_K', type=int, default=5, help='top K products to recommend')
 parser.add_argument('--api_key', type=str, default="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",help='openai api key')
-parser.add_argument('--log_file', type=str, default="./log/chatgpt.log",help='log file path')
+parser.add_argument('--log_file', type=str, default="./logs/chatgpt.log",help='log file path')
 parser.add_argument('--update_product', action='store_true', default=False,help='whether to update product details')
 parser.add_argument('--product_detail_path', type=str, default="./data/summary.json",help='product details json save path')
 parser.add_argument('--log_level', type=int, default=logging.DEBUG,help='log level')

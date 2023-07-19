@@ -219,7 +219,8 @@ class Agent:
             ]
 
         assistant_reply_json = self.chat(message, schema_name, **kwargs)
-        for i in range(5):
+        # for i in range(5):
+        while True:
             if assistant_reply_json["success"] is True or strict_mode is False:
                 break
             message_send = message + [
@@ -382,6 +383,7 @@ class Agent:
             elif self.status == "Recommend":
                 # if self.ask_preference==True:
                 if len(self.context) > 1:
+                    ori_preference = self.resource_dict["user_preference"]
                     self.resource_dict["user_preference"] = self.json_chat(
                         f"{SYSTEM_PROMPT}\n{UPDATE_USER_PREFERENCE_PROMPT}\nOriginal {'user_preference'}: {self.resource_dict['user_preference']}\n\nChat History:\n{self.context_string}\n",
                         "preference_sum",
@@ -390,7 +392,7 @@ class Agent:
                         strict_mode=False,
                     )
                     if self.verbose:
-                        print(f"User Preference: {self.resource_dict['user_preference']}")
+                        print(f"Update User Preference: {ori_preference} -> {self.resource_dict['user_preference']}")
                 # self.ask_preference=False
 
                 goal = self.json_chat(
