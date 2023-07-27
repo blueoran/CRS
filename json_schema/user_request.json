@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "user_request": {
+            "type": "string",
+            "description": "requests to the recommendation system",
+            "additionalProperties": false
+        }
+    },
+        "required": ["user_request"]
+}

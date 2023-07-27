@@ -9,6 +9,8 @@ from json_utilities import (
 import time
 import os
 import pandas as pd
+from communicate import chat,json_chat,json_chat_user
+import evaluator
 
 resource_list = ["user_preference", "product_details", "whole_chat_histories"]
 
@@ -42,12 +44,13 @@ PRODUCT_PROMPT = f"Given the following descriptions of products, please first de
 GOAL_PROMPT = "Given the Chat History below, generate the most important step for the chatbot to formulate a response that addresses the user's needs and maintains a coherent conversation flow. Then interpret this as a goal prompt to chatgpt to generate response. Don't use 'I' in the prompt."
 
 ACHIEVE_PROMPT = "What aspect should I consider to achieve the goal of "
-RESOURCES_PROMPT = f"Given the goal and the chat history provided, determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs. Remember you mustn't recommend products that are not given from the database. You should first consider to make the full use of the given context, determine whether you need more information from the user side and from database, then request what you really need only among [ {', '.join(resource_list)} ] to assist in achieving the goal."
-USER_PREFERENCE_PROMPT = "Considering the goal and the resources required, generate a question that should ask the user to gather their preferences effectively. This question should aim to obtain crucial information aligned with the goal and enable the chatbot to provide personalized recommendations based on the user's preferences."
+RESOURCES_PROMPT = f"Given the goal and the chat history provided, determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs. Remember you mustn't recommend products that are not given from the database. You should first consider to make the full use of the given context and user preference, determine whether you need more information from the user preference and from database, then request what you really need only among [ {', '.join(resource_list)} ] to assist in achieving the goal."
+USER_PREFERENCE_PROMPT = "Considering the goal and the resources required, generate a question that should ask the user to gather their preferences effectively. This question should aim to obtain crucial information aligned with the goal and enable the chatbot to provide personalized recommendations based on the user's preferences. Ensure that the reply incorporates most relevant information and maintains coherence with the conversation."
 UPDATE_USER_PREFERENCE_PROMPT = "Given the user's response to the question and the history preferences and the chat history, update the user's preferences accordingly."
 SUMMARY_PROMPT = "Given the goal, context, and the details of the resource provided, select the key points or items that are relevant to the user's needs. Then, generate a concise summary that effectively captures the essence of the resource while aligning with the goal and maintaining coherence with the conversation."
-PRODUCT_SELECTION_PROMPT = f"Given the goal, context, the key points of each product, and the details of the resource provided, select {4} products that are most necessary for a chatgpt to achieve the goal. Remember you mustn't select products that are not given from the database."
-RECOMMEND_PROMPT = "Considering the context, goal, and the given resources, generate a response that provides the most successful recommendation tailored to the user's needs. Remember you mustn't recommend products that are not given from the database. Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation."
+PRODUCT_SELECTION_PROMPT = f"Given the goal, context, the key points of each product, and the details of the resource provided, select {4} products that are most necessary for a chatgpt to achieve the goal. Remember you mustn't recommend products that are not given from the following products."
+RECOMMEND_PROMPT = "Considering the context, goal, and the given resources, generate a [[short]] response that provides the most successful recommendation tailored to the user's needs. Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation. Remember you mustn't recommend products that are not given from the following products. If you are not able to achieve any part of the goal even after synthesised all of the resources, just notify the user."
+RECOMMEND_DEBUG_PROMPT = "Considering the context, goal, and the given resources, generate a response that provides the most successful recommendation tailored to the user's needs. Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation. Remember you mustn't recommend products that are not given from the following products. If you are not able to achieve any part of the goal even after synthesised all of the resources, just notify the user. Tell me your thoughts when generating this response."
 
 
 constraints = [
@@ -98,6 +101,7 @@ class Agent:
         self.file_logger.addHandler(self.file_hander)
 
         self.start_chat = -1
+        # self.start_chat = 0
         self.product_type_set = set()
         self.product_detail = []
         load = False
@@ -119,7 +123,7 @@ class Agent:
             for i in range(len(self.product_info)):
                 product = self.product_info.iloc[i]
                 # print(product)
-                product_parse = self.json_chat(
+                product_parse = json_chat(self.file_logger,self.verbose,
                     f"{SYSTEM_PROMPT}\n{PRODUCT_PROMPT}\n\nProduct: {product['description']}",
                     "product",
                     "",
@@ -133,8 +137,8 @@ class Agent:
                 product["type"] = product_parse["product_type"]
                 self.product_type_set.add(product_parse["product_type"])
 
-            # self.product_detail=[[f'{x.iloc[i]["title"]}: '+str(self.json_chat(f"{SYSTEM_PROMPT}\n{PRODUCT_PROMPT}\n\nProduct: {product}",'product','','key_features',max_tokens=50))] ]
-            # self.product_detail=[[f'{x.iloc[i]["type"]}  {x.iloc[i]["title"]}: '+str(self.json_chat(f"{SYSTEM_PROMPT}\n{PRODUCT_PROMPT}\n\nProduct: {product}",'product','','key_features',max_tokens=50)) for i,product in enumerate(self.product_info[j])] for j,x in enumerate(self.products)]
+            # self.product_detail=[[f'{x.iloc[i]["title"]}: '+str(json_chat(self.file_logger,self.verbose,f"{SYSTEM_PROMPT}\n{PRODUCT_PROMPT}\n\nProduct: {product}",'product','','key_features',max_tokens=50))] ]
+            # self.product_detail=[[f'{x.iloc[i]["type"]}  {x.iloc[i]["title"]}: '+str(json_chat(self.file_logger,self.verbose,f"{SYSTEM_PROMPT}\n{PRODUCT_PROMPT}\n\nProduct: {product}",'product','','key_features',max_tokens=50)) for i,product in enumerate(self.product_info[j])] for j,x in enumerate(self.products)]
             with open(product_detail_path, "w") as f:
                 json.dump(
                     {
@@ -152,107 +156,23 @@ class Agent:
         self.resource_dict["product_details"] = "\n".join(self.product_detail)
         self.output = ""
         self.context_string = ""
-        self.user_message = ""
+        # self.user_message = ""
         self.ask_preference = False
-        self.status = "Recommend"
+        # self.status = "Recommend"
+        self.status = "Chatbot"
         self.explicit=explicit
+        self.evaluator=evaluator.Evaluator(self.file_logger,self.product_type_set,self.verbose)
 
-    def chat(self, message, schema_name, **kwargs):
-        self.file_logger.info(f"Chat: {message}")
-        while True:
-            try:
-                completion = openai.ChatCompletion.create(
-                    messages=message,
-                    model=kwargs.get("model", "gpt-3.5-turbo"),
-                    temperature=kwargs.get("temperature", 0.1),
-                    top_p=kwargs.get("top_p", 1),
-                    n=kwargs.get("n", 1),
-                    stream=kwargs.get("stream", False),
-                    stop=kwargs.get("stop", None),
-                    max_tokens=kwargs.get("max_tokens", 150),
-                    presence_penalty=kwargs.get("presence_penalty", 0),
-                    frequency_penalty=kwargs.get("frequency_penalty", 0),
-                    logit_bias=kwargs.get("logit_bias", {}),
-                )
-                break
-            except BaseException as e:
-                print(e)
-                continue
-        completion = completion["choices"][0]["message"]["content"]
-        self.file_logger.info(f"Completion: {completion}")
-
-        try:
-            assistant_reply_json = extract_json_from_response(completion)
-            validate_json(assistant_reply_json, schema_name)
-            return {"success": True, "val": assistant_reply_json}
-        except BaseException as e:
-            self.file_logger.error(
-                f"Exception while validating assistant reply JSON: {e}"
-            )
-            return {"success": False, "val": completion, "error": e}
-
-    def json_chat(
-        self,
-        sys_message,
-        schema_name,
-        user_message,
-        concerened_key=None,
-        strict_mode=True,
-        **kwargs,
-    ):
-        if user_message != "":
-            message = [
-                {"role": "system", "content": sys_message},
-                {"role": "user", "content": user_message},
-                {
-                    "role": "system",
-                    "content": f"\n\nRespond with only valid JSON conforming to the following schema: \n{llm_response_schema(schema_name)}\n",
-                },
-            ]
-        else:
-            message = [
-                {"role": "system", "content": sys_message},
-                {
-                    "role": "system",
-                    "content": f"\n\nRespond with only valid JSON conforming to the following schema: \n{llm_response_schema(schema_name)}\n",
-                },
-            ]
-
-        assistant_reply_json = self.chat(message, schema_name, **kwargs)
-        # for i in range(5):
-        while True:
-            if assistant_reply_json["success"] is True or strict_mode is False:
-                break
-            message_send = message + [
-                {
-                    "role": "system",
-                    "content": f"Your response ```{assistant_reply_json['val']} ``` cannot be parsed using `ast.literal_eval` because {assistant_reply_json['error']} \n\n Please respond with only valid JSON conforming to the following schema: \n{llm_response_schema(schema_name)}\n",
-                }
-            ]
-            assistant_reply_json = self.chat(message_send, schema_name, **kwargs)
-            time.sleep(1)
-        assistant_reply_json = assistant_reply_json["val"]
-        if self.verbose:
-            print(assistant_reply_json)
-        if concerened_key is not None:
-            try:
-                if concerened_key in assistant_reply_json.keys():
-                    return str(assistant_reply_json[concerened_key])
-                else:
-                    return str(assistant_reply_json["properties"][concerened_key])
-            except BaseException:
-                return str(assistant_reply_json)
-        return assistant_reply_json
 
     def recommend_fst(self, status):
         if self.explicit:
-            rec_score = self.json_chat(
+            rec_score = json_chat(self.file_logger,self.verbose,
                 f"{SYSTEM_PROMPT}\n{RECOMMEND_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n",
                 "rating_recommend_explicit",
                 "",
                 "recommend score"
             )
-            con_score = self.json_chat(
+            con_score = json_chat(self.file_logger,self.verbose,
                 f"{SYSTEM_PROMPT}\n{CONSISTENCY_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n",
                 "rating_consistency_explicit",
                 "",
@@ -265,13 +185,13 @@ class Agent:
             # rec_score = rating_recommend["recommend score"]
             # con_score = rating_consistency["consistency score"]
         else:
-            rec_score = self.json_chat(
+            rec_score = json_chat(self.file_logger,self.verbose,
                 f"{SYSTEM_PROMPT}\n{RECOMMEND_RATING_PROMPT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n",
                 "rating_recommend",
                 "","recommend score"
                 ,max_tokens=40
             )
-            con_score = self.json_chat(
+            con_score = json_chat(self.file_logger,self.verbose,
                 f"{SYSTEM_PROMPT}\n{CONSISTENCY_RATING_PROMPT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n",
                 "rating_consistency",
                 "","consistency score"
@@ -280,21 +200,21 @@ class Agent:
         rec_score=int(rec_score)
         con_score=int(con_score)
         if status == "Chatbot":
-            if self.start_chat == -1:
-                raise ValueError("start_chat==-1 in Chatbot mode")
+            # if self.start_chat == -1:
+            #     raise ValueError("start_chat==-1 in Chatbot mode")
             print("status=='Chatbot'")
             if rec_score > 5:
                 print("rec_score>5")
                 if self.explicit:
                     
-                    capable = self.json_chat(
+                    capable = json_chat(self.file_logger,self.verbose,
                         f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
                         "capable_explicit",
                         "",
                         "capable",
                     )
                 else:
-                    capable = self.json_chat(
+                    capable = json_chat(self.file_logger,self.verbose,
                         f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
                         "capable",
                         "",
@@ -305,9 +225,10 @@ class Agent:
                 # import pdb;pdb.set_trace()
                 if capable == True:
                     print("capable==True")
+                    user_message=self.context[-1]
                     self.context = self.context[: self.start_chat]
                     self.context.append(
-                        f"User: {self.user_message}"
+                        user_message
                     )
                     self.context_string = "\n".join(self.context[-6:])
                     print(self.context)
@@ -334,14 +255,14 @@ class Agent:
                     print("con_score<=5")
                     if self.explicit:
                         
-                        capable = self.json_chat(
+                        capable = json_chat(self.file_logger,self.verbose,
                             f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT_EXPLICIT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
                             "capable_explicit",
                             "",
                             "capable",
                         )
                     else:
-                        capable = self.json_chat(
+                        capable = json_chat(self.file_logger,self.verbose,
                             f"{SYSTEM_PROMPT}\n{CAPABLE_RECOMMEND_RATING_PROMPT}\nChat History:\n{self.context_string}\n\nUser Input:\n{self.context[-1]}\n\nProduct Types:{list(self.product_type_set)}",
                             "capable",
                             "",
@@ -360,160 +281,47 @@ class Agent:
                         status = "Chatbot"
         print(status)
         return status
-
-    def main_loop(self):
-        while True:
-            self.context_string = "\n".join(self.context[-6:])
-            self.user_message = input("User: ")
-            start_time = time.time()
-            self.context.append(f"User: {self.user_message}")
-            if self.user_message == "exit":
-                break
-
-            self.status = self.recommend_fst(self.status)
-
-            if self.status == "Chatbot":
-                self.output = self.json_chat(
-                    f"{CHAT_PROMPT}\nChat History:\n{self.context_string}",
-                    "chatbot",
-                    self.user_message,
-                    "response",
-                )
-
-            elif self.status == "Recommend":
-                # if self.ask_preference==True:
-                if len(self.context) > 1:
-                    ori_preference = self.resource_dict["user_preference"]
-                    self.resource_dict["user_preference"] = self.json_chat(
-                        f"{SYSTEM_PROMPT}\n{UPDATE_USER_PREFERENCE_PROMPT}\nOriginal {'user_preference'}: {self.resource_dict['user_preference']}\n\nChat History:\n{self.context_string}\n",
-                        "preference_sum",
-                        self.user_message,
-                        "preference_summary",
-                        strict_mode=False,
-                    )
-                    if self.verbose:
-                        print(f"Update User Preference: {ori_preference} -> {self.resource_dict['user_preference']}")
-                # self.ask_preference=False
-
-                goal = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{GOAL_PROMPT}\nChat History:\n{self.context_string}\n{self.context[-1]}",
-                    "goal",
-                    "",
-                )["goal"]
-                # print(f"Goal:{goal}")
-                instruction = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{ACHIEVE_PROMPT} {goal}? Please describe as short ang specific as possible",
-                    "instruction",
-                    "",
-                    "goal_instruction",
-                    strict_mode=False,
-                    max_tokens=50,
-                )
-                # print(f"Instrction:{instruction}")
-                required_resource = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{RESOURCES_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nChat History:\n{self.context_string}\n{self.context[-1]}\n",
-                    "required_resource",
-                    "",
-                )
-                # print(f"Required Resource:{required_resource}")
-
-                # for k in required_resource.keys():
-                #     if required_resource[k]==True:
-                #         resource_dict[k]=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nChat History:\n{self.context_string}\n",'resource',self.user_message)[k]
-
-                # required_resource={k:True if k in required_resource else k:False for k in re}
-                
-                required_resource={x:True if required_resource[x]=="True" or required_resource[x]==True else False for x in required_resource}
-                if (
-                    required_resource["need_user_preference"] == True
-                ):  # need user's specified information
-                    resources = "\n".join(
-                        [f"{k}:{v}" for k, v in self.resource_dict.items()]
-                    )
-                    self.output = self.json_chat(
-                        f"{SYSTEM_PROMPT}\n{USER_PREFERENCE_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:\n\n{resources}",
-                        "preference",
-                        self.user_message,
-                        "question_for_preference",
-                    )
-                    # self.ask_preference=True
-                else:
-                    resources = (
-                        "User Preference: " + self.resource_dict["user_preference"]
-                    )
-                    if required_resource["need_whole_chat_histories"] == True:
-                        whole_context_string = "\n".join(self.context)
-                        resources += f"\n\nWhole Chat History:\n{whole_context_string}"
-                        # self.resource_dict['whole_chat_histories']=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nResources:{resources}\n\nWhole Chat History:\n{whole_context_string}\nYou should summarize the {'whole_chat_histories'}",'chat_history',self.user_message)['chat_history_sum']
-
-                    if required_resource["need_product_details"] == True:
-                        selected_products = self.json_chat(
-                            f"{SYSTEM_PROMPT}\n{PRODUCT_SELECTION_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\n\nProduct Key Features:{self.resource_dict['product_details']}\n\nResources:{resources}\nContext: {self.context_string}",
-                            "product_select",
-                            "",
-                            max_tokens=300,
-                        )["Necessary_Products"]
-                        # print(selected_products)
-                        from fuzzywuzzy import process
-
-                        product_string = ""
-                        for p in selected_products.keys():
-                            best_match = process.extractOne(
-                                selected_products[p], self.product_name
-                            )
-                            product_string += f"\n{best_match[0]}: {self.product_info[self.product_info['title']==best_match[0]]['description'].values[0]}"
-
-                        resources += f"\n\nWhole product details:\n{product_string}"
-
-                    self.output = self.json_chat(
-                        f"{SYSTEM_PROMPT}\n{RECOMMEND_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:{resources}\nContext: {self.context_string}",
-                        "response",
-                        self.user_message,
-                        "response",
-                        max_tokens=200,
-                    )
-
-            print(f"System: {self.output}")
-            self.context.append(f"System: {self.output}")
-            print(f"Time elapsed: {time.time()-start_time}")
+    
     def user_interactive(self,user_message):
         self.context_string = "\n".join(self.context[-6:])
-        self.user_message = user_message
         start_time = time.time()
-        self.context.append(f"User: {self.user_message}")
+        self.context.append(f"User: {user_message}")
+        if user_message == "exit":
+            return user_message
 
         self.status = self.recommend_fst(self.status)
 
         if self.status == "Chatbot":
-            self.output = self.json_chat(
+            self.output = json_chat(self.file_logger,self.verbose,
                 f"{CHAT_PROMPT}\nChat History:\n{self.context_string}",
                 "chatbot",
-                self.user_message,
+                user_message,
                 "response",
             )
 
         elif self.status == "Recommend":
             # if self.ask_preference==True:
             if len(self.context) > 1:
-                self.resource_dict["user_preference"] = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{UPDATE_USER_PREFERENCE_PROMPT}\nOriginal {'user_preference'}: {self.resource_dict['user_preference']}\n\nChat History:\n{self.context_string}\n",
+                ori_preference = self.resource_dict["user_preference"]
+                self.resource_dict["user_preference"] = json_chat(self.file_logger,self.verbose,
+                    f"{SYSTEM_PROMPT}\n{UPDATE_USER_PREFERENCE_PROMPT}\n\nChat History:\n{self.context_string}\n\nUser's Current Request:{user_message}\n\nOriginal {'user_preference'}: {self.resource_dict['user_preference']}",
                     "preference_sum",
-                    self.user_message,
+                    "",
                     "preference_summary",
                     strict_mode=False,
                 )
                 if self.verbose:
-                    print(f"User Preference: {self.resource_dict['user_preference']}")
+                    print(f"Update User Preference: {ori_preference} -> {self.resource_dict['user_preference']}")
             # self.ask_preference=False
 
-            goal = self.json_chat(
+            goal = json_chat(self.file_logger,self.verbose,
                 f"{SYSTEM_PROMPT}\n{GOAL_PROMPT}\nChat History:\n{self.context_string}\n{self.context[-1]}",
                 "goal",
                 "",
             )["goal"]
             # print(f"Goal:{goal}")
-            instruction = self.json_chat(
-                f"{SYSTEM_PROMPT}\n{ACHIEVE_PROMPT} {goal}? Please describe as short ang specific as possible",
+            instruction = json_chat(self.file_logger,self.verbose,
+                f"{SYSTEM_PROMPT}\n{ACHIEVE_PROMPT} {goal}? Please describe as short and specific as possible",
                 "instruction",
                 "",
                 "goal_instruction",
@@ -521,8 +329,9 @@ class Agent:
                 max_tokens=50,
             )
             # print(f"Instrction:{instruction}")
-            required_resource = self.json_chat(
-                f"{SYSTEM_PROMPT}\n{RESOURCES_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nChat History:\n{self.context_string}\n{self.context[-1]}\n",
+            user_preference=self.resource_dict['user_preference']
+            required_resource = json_chat(self.file_logger,self.verbose,
+                f"{SYSTEM_PROMPT}\n{RESOURCES_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nUser Preference: {user_preference}Chat History:\n{self.context_string}\n{self.context[-1]}\n",
                 "required_resource",
                 "",
             )
@@ -530,7 +339,7 @@ class Agent:
 
             # for k in required_resource.keys():
             #     if required_resource[k]==True:
-            #         resource_dict[k]=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nChat History:\n{self.context_string}\n",'resource',self.user_message)[k]
+            #         resource_dict[k]=json_chat(self.file_logger,self.verbose,f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nChat History:\n{self.context_string}\n",'resource',user_message)[k]
 
             # required_resource={k:True if k in required_resource else k:False for k in re}
             
@@ -541,10 +350,10 @@ class Agent:
                 resources = "\n".join(
                     [f"{k}:{v}" for k, v in self.resource_dict.items()]
                 )
-                self.output = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{USER_PREFERENCE_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:\n\n{resources}",
+                self.output = json_chat(self.file_logger,self.verbose,
+                    f"{SYSTEM_PROMPT}\n{USER_PREFERENCE_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:\n\n{resources}\nChat History:\n{self.context_string}\n{self.context[-1]}\n",
                     "preference",
-                    self.user_message,
+                    user_message,
                     "question_for_preference",
                 )
                 # self.ask_preference=True
@@ -555,11 +364,11 @@ class Agent:
                 if required_resource["need_whole_chat_histories"] == True:
                     whole_context_string = "\n".join(self.context)
                     resources += f"\n\nWhole Chat History:\n{whole_context_string}"
-                    # self.resource_dict['whole_chat_histories']=self.json_chat(f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nResources:{resources}\n\nWhole Chat History:\n{whole_context_string}\nYou should summarize the {'whole_chat_histories'}",'chat_history',self.user_message)['chat_history_sum']
+                    # self.resource_dict['whole_chat_histories']=json_chat(self.file_logger,self.verbose,f"{SYSTEM_PROMPT}\n{SUMMARY_PROMPT}\nGoal:{goal}\nResources:{resources}\n\nWhole Chat History:\n{whole_context_string}\nYou should summarize the {'whole_chat_histories'}",'chat_history',user_message)['chat_history_sum']
 
                 if required_resource["need_product_details"] == True:
-                    selected_products = self.json_chat(
-                        f"{SYSTEM_PROMPT}\n{PRODUCT_SELECTION_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\n\nProduct Key Features:{self.resource_dict['product_details']}\n\nResources:{resources}\nContext: {self.context_string}",
+                    selected_products = json_chat(self.file_logger,self.verbose,
+                        f"{SYSTEM_PROMPT}\n{PRODUCT_SELECTION_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\n\nProduct Key Features:{self.resource_dict['product_details']}\n\nResources:{resources}\nContext: {self.context_string}\n{self.context[-1]}\n",
                         "product_select",
                         "",
                         max_tokens=300,
@@ -570,21 +379,45 @@ class Agent:
                     product_string = ""
                     for p in selected_products.keys():
                         best_match = process.extractOne(
-                            selected_products[p], self.product_name
+                            selected_products[p], self.product_name, score_cutoff=0.8
                         )
-                        product_string += f"\n{best_match[0]}: {self.product_info[self.product_info['title']==best_match[0]]['description'].values[0]}"
+                        if best_match is not None:
+                            selected_products[p]=best_match[0]
+                            product_string += f"\n{best_match[0]}: {self.product_info[self.product_info['title']==best_match[0]]['description'].values[0]}"
+                        else:
+                            selected_products[p]=""
 
-                    resources += f"\n\nWhole product details:\n{product_string}"
+                    resources += f"\n\nSelected Products that you should only refer from: {'; '.join(selected_products.values())}\n\nWhole product details:\n{product_string}"
 
-                self.output = self.json_chat(
-                    f"{SYSTEM_PROMPT}\n{RECOMMEND_PROMPT}\nGoal:{goal}\nInstruction:{instruction}\nResources:{resources}\nContext: {self.context_string}",
-                    "response",
-                    self.user_message,
-                    "response",
-                    max_tokens=200,
-                )
+                result={'faults/hallucinations': True, 'feedback': '', 'suggestions': ''}
+                previous_output=""
+                for i in range(3):
+                    if result['faults/hallucinations'] is False:
+                        break
+                    if self.explicit:
+                        self.output = json_chat(self.file_logger,self.verbose,
+                            f"{SYSTEM_PROMPT}\n{RECOMMEND_DEBUG_PROMPT}\n\nGoal:{goal}\nInstruction:{instruction}\nResources:{resources}\nContext: {self.context_string}\n\n**Please refer to the feedback and suggestion to the following possible output from a recommender to generate a better response**\n\nPrevious Output:{previous_output}\n\nFeedback:{result['feedback']}\n\nSuggestions:{result['suggestions']}",
+                            "response_explicit",
+                            user_message,
+                            "response",
+                            max_tokens=400,
+                            complete_mode=True,
+                            context=f'{self.context_string}\nUser: {user_message}\n'
+                        )
+                    else:
+                        self.output = json_chat(self.file_logger,self.verbose,
+                            f"{SYSTEM_PROMPT}\n{RECOMMEND_PROMPT}\n\nGoal:{goal}\nInstruction:{instruction}\nResources:{resources}\nContext: {self.context_string}\n\n**Please refer to the feedback and suggestion to the following possible output from a recommender to generate a better response**\n\nPrevious Output:{previous_output}\n\nFeedback:{result['feedback']}",
+                            "response",
+                            user_message,
+                            "response",
+                            max_tokens=200,
+                            complete_mode=True,
+                            context=f'{self.context_string}\nUser: {user_message}\n'
+                        )
+                    result=self.evaluator.evaluate(f'{self.context_string}\nUser: {user_message}\n',self.output,resources)
+                    previous_output=self.output
 
-        print(f"System: {self.output}")
+        # print(f"System: {self.output}")
         self.context.append(f"System: {self.output}")
         print(f"Time elapsed: {time.time()-start_time}")
         return self.output

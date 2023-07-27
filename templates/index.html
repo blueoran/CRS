@@ -1,17 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>智能推荐系统</title>
+    <title>Naiive Recommendation System</title>
+    <style>
+        .user-message {
+            color: blue;
+        }
+        .class-message {
+            color: green;
+        }
+    </style>
 </head>
 <body>
-    <h1>智能推荐系统</h1>
-    <form method="POST" action="/">
-        <input type="text" name="user_input" placeholder="输入用户信息">
-        <button type="submit">提交</button>
-    </form>
-    {% if recommendation %}
-        <h2>推荐结果：</h2>
-        <p>{{ recommendation }}</p>
+    <h1>Naiive Recommendation System</h1>
+    
+    {% if history %}
+    <h2>History:</h2>
+    <ul>
+        {% for message in history %}
+        {% if message.role == 'user' %}
+        <li class="user-message">{{ message.content }}</li>
+        {% else %}
+        <li class="class-message">{{ message.content }}</li>
+        {% endif %}
+        {% endfor %}
+    </ul>
     {% endif %}
+
+    <form method="post">
+        <label for="user_input">Enter your input:</label>
+        <input type="text" id="user_input" name="user_input" required>
+        <button type="submit">Submit</button>
+        <button type="button" onclick="resetHistory()">Reset</button>
+    </form>
+
+    <script>
+        function resetHistory() {
+            // This function will be called when the Reset button is clicked.
+            if (confirm('Are you sure you want to reset the history?')) {
+                // Redirect to the same page with a query parameter to indicate reset.
+                window.location.href = '/?reset=true';
+            }
+        }
+    </script>
 </body>
 </html>

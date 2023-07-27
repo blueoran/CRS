@@ -1,0 +1,22 @@
+{
+
+    "type": "object",
+    "properties": {
+        "faults/hallucinations": {
+            "type": "boolean",
+            "description": "whether there is faults/hallucinations in the response",
+            "additionalProperties": false
+        },
+        "feedback": {
+            "type": "string",
+            "description": "detailed feedback about the response from the recommendation system",
+            "additionalProperties": false
+        },
+        "suggestions": {
+            "type": "string",
+            "description": "suggestions directly to the recommendation system",
+            "additionalProperties": false
+        }
+    },
+        "required": ["faults/hallucinations","feedback","suggestions"]
+}
