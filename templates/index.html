@@ -5,14 +5,75 @@
     <style>
         .user-message {
             color: blue;
+            font-size: 20px;
         }
-        .class-message {
+        .class-rec-message {
+            color: purple;
+            font-size: 20px;
+        }
+        .class-gpt-message {
             color: green;
+            font-size: 15px;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 50px;
+        }
+
+        .input-box {
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s ease-in-out;
+            width: 800px;
+        }
+
+        .input-box:focus {
+            border-color: #4285f4;
+        }
+        .reset-button,
+        .submit-button {
+            background-color: #4285f4;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            margin-left: 10px;
+        }
+
+        .submit-button:hover,
+        .reset-button:hover {
+            background-color: #1a73e8;
+        }
+        .title-container {
+
+        }
+
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4285f4;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
 <body>
-    <h1>Naiive Recommendation System</h1>
+    <div class="title-container">
+    <h1 class="title">Naiive Recommendation System <br> (for very limited movies, books and cellphones)</h1>
+    </div>
     
     {% if history %}
     <h2>History:</h2>
@@ -20,21 +81,27 @@
         {% for message in history %}
         {% if message.role == 'user' %}
         <li class="user-message">{{ message.content }}</li>
-        {% else %}
-        <li class="class-message">{{ message.content }}</li>
+        {% elif message.role == 'class_rec' %}
+        <li class="class-rec-message">{{ message.content }}</li>
+        {% elif message.role == 'class_gpt' %}
+        <li class="class-gpt-message">{{ message.content }}</li>
         {% endif %}
         {% endfor %}
     </ul>
     {% endif %}
 
     <form method="post">
-        <label for="user_input">Enter your input:</label>
-        <input type="text" id="user_input" name="user_input" required>
-        <button type="submit">Submit</button>
-        <button type="button" onclick="resetHistory()">Reset</button>
+        <div class="input-container">
+            <input type="text" class="input-box" placeholder="Enter your input"  id="user_input" name="user_input" required>
+            <button type="submit" class="submit-button">Submit</button>
+            <button type="reset" class="reset-button" onclick="resetHistory()">Reset</button>
+        </div>
     </form>
-
+    
     <script>
+        // <label for="user_input">Enter your input:</label>
+        // <input type="text" id="user_input" name="user_input" required>
+        // <button type="submit">Submit</button>
         function resetHistory() {
             // This function will be called when the Reset button is clicked.
             if (confirm('Are you sure you want to reset the history?')) {

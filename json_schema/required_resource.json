@@ -8,11 +8,7 @@
     "need_product_details":{
         "type":"boolean",
         "additionalProperties": false
-    },
-    "need_whole_chat_histories":{
-        "type":"boolean",
-        "additionalProperties": false
     }
 },
-    "required": ["need_user_preference", "need_product_details","need_whole_chat_histories"]
+    "required": ["need_user_preference", "need_product_details"]
 }

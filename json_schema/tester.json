@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "mimic_user_interaction": {
+            "type": "string",
+            "description": "Interaction with the recommendation system as if you are a real user. If you think the test case reaches to end, only say 'exit' to end the conversation.",
+            "additionalProperties": false
+        }
+    },
+        "required": ["mimic_user_interaction"]
+}

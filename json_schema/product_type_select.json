@@ -1,0 +1,13 @@
+{
+
+    "type": "object",
+    "properties": {
+        "Product Types": {
+            "type": "array",
+            "items": {"type": "string", "minLength": 1},
+            "description": "Types of the products that might be utilized to effectively achieve the desired goal and fulfill the user's requests.",
+            "additionalProperties": false
+        }
+    },
+        "required": ["Product Types"]
+}

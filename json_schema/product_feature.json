@@ -1,0 +1,12 @@
+{
+
+    "type": "object",
+    "properties": {
+        "Product Feature": {
+            "type": "string",
+            "description": "the features that the products should have",
+            "additionalProperties": false
+        }
+    },
+        "required": ["Product Feature"]
+}

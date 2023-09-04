@@ -1,0 +1,18 @@
+{
+
+    "type": "object",
+    "properties": {
+        "need_do_update":{
+            "type":"boolean",
+            "additionalProperties": false,
+            "description": "Does the former preference not accurately reflect the user's current preference and need to be updated?"
+        },
+        "preference_summary": {
+            "type": "string",
+            "additionalProperties": false,
+            "description": "A summary to the user's preferences"
+
+        }
+    },
+    "required": ["need_do_update","preference_summary"]
+}

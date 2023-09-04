@@ -4,7 +4,8 @@
     "properties": {
         "preference_summary": {
             "type": "string",
-            "additionalProperties": false
+            "additionalProperties": false,
+            "description": "A summary to the user's preferences"
 
         }
     },
