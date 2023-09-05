@@ -17,6 +17,8 @@ parser.add_argument('--log_level', type=int, default=logging.DEBUG,help='log lev
 parser.add_argument('--explicit', action='store_true',help='whether to explicitly show the thinking of the recommendation gpt')
 parser.add_argument('--verbose', action='store_true',help='whether to show the process of the recommendation')
 parser.add_argument('--testcase', type=str, default=None,help='testcase')
+parser.add_argument('--product_gpt', action='store_true')
+parser.add_argument('--pure_gpt', action='store_true')
 
 args = parser.parse_args()
 
@@ -53,10 +55,12 @@ def main_loop(testcase=None):
             break
         rec_response=rec.user_interactive(user_input)
         print(f'[[Rec]]: {rec_response}')
-        product_gpt_response=product_gpt.user_interactive(context)
-        print(f'[[ProductGPT]]: {product_gpt_response}')
-        gpt_rec_response=gpt_rec.interactive(context)
-        print(f'[[ChatGPT]]: {gpt_rec_response}')
+        if args.product_gpt:
+            product_gpt_response=product_gpt.user_interactive(context)
+            print(f'[[ProductGPT]]: {product_gpt_response}')
+        if args.pure_gpt:
+            gpt_rec_response=gpt_rec.interactive(context)
+            print(f'[[ChatGPT]]: {gpt_rec_response}')
         context.append({"role":"assistant","content":rec_response})
     
     return context

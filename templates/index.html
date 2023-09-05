@@ -99,13 +99,9 @@
     </form>
     
     <script>
-        // <label for="user_input">Enter your input:</label>
-        // <input type="text" id="user_input" name="user_input" required>
-        // <button type="submit">Submit</button>
+
         function resetHistory() {
-            // This function will be called when the Reset button is clicked.
             if (confirm('Are you sure you want to reset the history?')) {
-                // Redirect to the same page with a query parameter to indicate reset.
                 window.location.href = '/?reset=true';
             }
         }
