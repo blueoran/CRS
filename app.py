@@ -29,6 +29,8 @@ product_dict = {
     './data/2023_phone.csv':'name',
     './data/2023_movie.csv':'name'
 }
+if not os.path.exists('./logs'):
+    os.makedirs('./logs')
 ####
 
 user_instances = {}
