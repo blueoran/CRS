@@ -103,11 +103,17 @@ class Prompter:
     
     "Given the goal and the chat history provided, determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs. Remember you mustn't recommend products that are not given from the database. You should first consider to make the full use of the given context and user preference, determine whether you need more information from the user preference and from database, then request what you really need only among [ user preference, product details ] to assist in achieving the goal."
     RESOURCES_PROMPT = compose_prompt(
-        "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+        "Determine the resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
         "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
         "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
-        "Make the best use of the current given resources first."
+        "Be open to ask for more relevant prroducts."
     )
+    # RESOURCES_PROMPT = compose_prompt(
+    #     "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+    #     "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
+    #     "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+    #     "Make the best use of the current given resources first."
+    # )
 
 
     PRODUCT_SELECTION_PROMPT = f"Given the goal, context, the key points of each product, and the details of the resource provided, select {4} products that are most necessary for a chatgpt to achieve the goal. Remember you mustn't recommend products that are not given from the following products."

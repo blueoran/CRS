@@ -72,7 +72,7 @@ user_instances (Dict): {
 }
 ```
 
-We can use `Agent.user_interactive(user_input)` to get the response of the recommendation agent. The `user_history` dictionary is used to save the conversation history of each user to show in the web page.
+We can use `Agent.user_interactive(user_input)` to get the response of the recommendation agent. The `user_history` dictionary is used to save the conversation history of each user to show in the web page as shown in the following code:
 
 
 ```python

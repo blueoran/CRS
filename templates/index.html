@@ -69,8 +69,11 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
     </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 </head>
 <body>
+    <div id="responseContainer">
     <div class="title-container">
     <h1 class="title">Naiive Recommendation System <br> (for very limited movies, books and cellphones)</h1>
     </div>
@@ -78,26 +81,30 @@
     {% if history %}
     <h2>History:</h2>
     <ul>
-        {% for message in history %}
+        {% for message in history[:-1] %}
         {% if message.role == 'user' %}
-        <li class="user-message">{{ message.content }}</li>
+        <li class="user-message">{{ message.content | safe  }}</li>
         {% elif message.role == 'class_rec' %}
-        <li class="class-rec-message">{{ message.content }}</li>
-        {% elif message.role == 'class_gpt' %}
-        <li class="class-gpt-message">{{ message.content }}</li>
+        <li class="class-rec-message">{{ message.content | safe  }}</li>
         {% endif %}
         {% endfor %}
+        {% if result %}
+        <li class="class-rec-message">{{ result | safe  }}</li>
+        {% endif %}
     </ul>
     {% endif %}
 
-    <form method="post">
+
+    <form method="post" onsubmit="submitForm(event)">
         <div class="input-container">
-            <input type="text" class="input-box" placeholder="Enter your input"  id="user_input" name="user_input" required>
-            <button type="submit" class="submit-button">Submit</button>
+            <input type="text" class="input-box" placeholder="Enter your input" id="user_input" name="user_input" required>
+            <button type="submit" class="submit-button" id="submitBtn">Submit</button>
             <button type="reset" class="reset-button" onclick="resetHistory()">Reset</button>
         </div>
     </form>
-    
+
+    </div>
+
     <script>
 
         function resetHistory() {
@@ -106,5 +113,34 @@
             }
         }
     </script>
+
+
+    <script>
+        function submitForm(event) {
+            event.preventDefault(); // Prevent the default form submission
+            var submitBtn = document.getElementById("submitBtn");
+            submitBtn.disabled = true;
+            var user_input = document.getElementById("user_input").value;
+            var responseContainer = document.getElementById("responseContainer");
+            // Disable the submit button
+
+            $.ajax({
+                type: "POST",
+                url: "/", // Change this URL to the appropriate backend URL
+                data: { 'user_input': user_input },
+                success: function(response) {
+                    
+                    // Enable the submit button after the response is received
+                    responseContainer.innerHTML = response;
+                    submitBtn.disabled = false;
+                },
+                error: function() {
+                    // Enable the submit button on error
+                    submitBtn.disabled = false;
+                }
+            });
+        }
+    </script>
+  
 </body>
 </html>

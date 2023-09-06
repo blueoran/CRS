@@ -114,6 +114,7 @@ class Agent:
                         {'attribute':'Goal','content':goal},
                         {'attribute':'Instruction','content':instruction},
                         {'attribute':'User Preference','content':self.preference.user_preference},
+                        # {'attribute':'Resources','content':self.resources},
                         {'attribute':'Chat History','content':self.context[:-1]},
                         {'attribute':'User Input','content':self.context[-1]}
                     )},
