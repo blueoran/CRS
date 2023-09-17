@@ -4,7 +4,7 @@
     "properties": {
         "Products Selected": {
             "type": "array",
-            "items": {"type": "string", "maxLength": 5},
+            "items": {"type": "string", "maxItems": 5},
             "description": "Products that can be used to help to effectively achieve the desired goal and fulfill the user's requests.",
             "additionalProperties": false
         }

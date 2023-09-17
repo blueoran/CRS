@@ -4,13 +4,13 @@
     "properties": {
         "Products Selected from Current Given Products": {
             "type": "array",
-            "items": {"type": "string", "minLength": 0, "maxLength": 4},
+            "items": {"type": "string", "minItems": 0, "maxItems": 4},
             "description": "Products selected only from the currently given products, which can be used to help to effectively achieve the desired goal and fulfill the user's requests. Don't choose what you have previously selected.",
             "additionalProperties": false
         },
         "Products Summary":{
             "type":"array",
-            "items": {"type": "string", "minLength": 0, "maxLength": 4},
+            "items": {"type": "string", "minItems": 0, "maxItems": 4},
             "description":"A breif and short summary for each products you selected from the database that you think will be valuable for the recommendation system based on the user's request, goal, resources and given context. The format in each summary should be: [Product Name]: [Summary].",
             "additionalProperties": false
         },
