@@ -19,7 +19,7 @@ openai.api_key="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"
 update_product=False
 product_detail_path="./data/summary.json"
 log_level=logging.DEBUG
-explicit=False
+explicit=True
 verbose=False
 testcase=None
 
@@ -63,7 +63,7 @@ def index():
         user_id = request.access_route[0]
         print(user_id)
 
-        if user_id not in user_instances:
+        if user_id not in user_instances: 
             create_instance(user_id)
         
         result_rec = user_instances[user_id]['rec'].user_interactive(user_input).replace('\n','<br />')

@@ -1,0 +1,22 @@
+{
+
+    "type": "object",
+    "properties": {
+        "space_for_improvement": {
+            "type": "boolean",
+            "description": "whether there is still a space for improvement",
+            "additionalProperties": false
+        },
+        "feedback": {
+            "type": "string",
+            "description": "detailed feedback about the response from the recommendation system",
+            "additionalProperties": false
+        },
+        "suggestions": {
+            "type": "string",
+            "description": "suggestions directly to the recommendation system",
+            "additionalProperties": false
+        }
+    },
+        "required": ["space_for_improvement","feedback","suggestions"]
+}

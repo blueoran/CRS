@@ -1,3 +1,5 @@
+from datetime import datetime
+
 def compose_prompt(task,instruction,resources,requirement):
     prompt = '\n'.join([
         f"Your current task is: {task}" if task else "",
@@ -11,7 +13,7 @@ def compose_prompt(task,instruction,resources,requirement):
 class Prompter:
     
     SYSTEM_PROMPT = \
-    """You are a Socially Intelligent General Recommender that serve in 8/28/2023. Your ultimate goal is to provide personalized and contextually relevant recommendations or suggestions as precise as possible.
+    f"""You are a Socially Intelligent General Recommender that serve in {datetime.today().strftime('%m/%d/%Y')}. Your ultimate goal is to provide personalized and contextually relevant recommendations or suggestions as precise as possible.
     To achieve this goal, you should leverage user preferences, product information, historical data, real-time context, and so on, to generate accurate and engaging recommendations, while maintaining a seamless and intuitive conversational experience."""
 
     COMPLETE_CHAT_PROMPT = "As a refiner and summarizer, your primary function is to refine and summarize incomplete outputs from ChatGPT caused by token limits. Your objective is to provide consistent and coherent summaries that can be directly communicated with the user. To achieve this, You should utilize all the context available to you, ensuring the generated summaries maintain relevance and accuracy."
@@ -26,17 +28,21 @@ class Prompter:
     )
 
     'Your task is to assess the probability that the user currently needs a recommendation system to serve for products recommendation or summary, comparison, list in detail etc. based on user\'s cureent input and the context of the conversation.\n\nTo score this probability, you should consider various factors, such as: User Intent, Previous Interactions, Contextual Keywords, User Engagement, Recommendation Process\n\nUsing these factors, please develop an algorithm that assigns a probability score between 0 and 9, indicating the likelihood that the user currently requires a recommendation system to serve. Please briefly explain your scoring reasons and provide an appropriate score.'
+    
+
     RECOMMEND_RATING_PROMPT = compose_prompt(
-        "Assess the probability that the user currently needs the recommendation system to serve instead of a pure chatbot",
-        "Base on the user\'s current input and the context of the conversation, Consider various factors, such as: User Intent, Previous Interactions, Contextual Keywords, User Engagement, Recommendation Process",
-        "the user's current input and the context of the conversation",
-        "the probability score should be between 0 and 9, indicating the likelihood that the user currently requires a recommendation system to serve. Scores that is lower than 5 will be directly recognized as only need chatbot to serve. Please only provide an appropriate score."
+        "Evaluate the likelihood that the user requires the recommendation system instead of just a chatbot.",
+        "Consider if the user's intent needs product-specific to response, which may involves seeking detailed product information, summarizing products, comparing products, or explicitly or implicitly asking for recommendations.",
+        "The user's current input and the ongoing conversation context.",
+        "Provide a probability score from 0 to 9. A score below 5 suggests the user mainly needs chatbot interaction. Ensure the score is appropriate to the user's intent."
     )
+
+
     RECOMMEND_RATING_PROMPT_EXPLICIT = compose_prompt(
-        "Assess the probability that the user currently needs the recommendation system to serve instead of a pure chatbot",
-        "Base on the user\'s current input and the context of the conversation, Consider various factors, such as: User Intent, Previous Interactions, Contextual Keywords, User Engagement, Recommendation Process",
-        "the user's current input and the context of the conversation",
-        "the probability score should be between 0 and 9, indicating the likelihood that the user currently requires a recommendation system to serve. Scores that is lower than 5 will be directly recognized as only need chatbot to serve. Please briefly explain your scoring reasons and provide an appropriate score."
+        "Evaluate the likelihood that the user requires the recommendation system instead of just a chatbot.",
+        "Consider if the user's intent needs product-specific to response, which may involves seeking detailed product information, summarizing products, comparing products, or explicitly or implicitly asking for recommendations.",
+        "The user's current input and the ongoing conversation context.",
+        "Provide a probability score from 0 to 9. A score below 5 suggests the user mainly needs chatbot interaction. Ensure the score is appropriate to the user's intent. Please briefly explain your scoring reasons and provide an appropriate score."
     )
     
     "Your task is to score the consistency of the current user's input with the previous dialog context. Take into account both the user's input and the context to determine how well the current input aligns with the conversation history.You should be strict with the consistency between the latest context and the current user's input, while loose your standard with the former dialogs. Assign a consistency score between 0 and 9, where 0 represents complete inconsistency and 9 represents perfect consistency. Please briefly explain your scoring reasons and provide an appropriate score."
@@ -148,6 +154,13 @@ class Prompter:
         "DO NOT SELECT PRODUCTS THAT DOESN'T APPEAR IN CURRENLY GIVEN PRODUCTS. Only select necessary products and only from the given available products below. Make the best use of the previous selected products first before you select new products. If there is no products that can satisfy, just select nothing.",
     )
 
+
+    PRODUCT_VERIFY_PROMPT = compose_prompt(
+        "Evaluate if the selected products align with the user's needs and preferences using the provided resources.",
+        "Examine every part of the product details and the user's preferences to identify any mismatches between the two.",
+        "Consider: goal, instruction, user preference, context, user input, product details, and essential product features.",
+        "If products only partly satisfy the user's needs, acknowledge the alignment as true. However, clarify which aspects of the user's needs are met and which aren't. If there are factual or logical errors, consider the alignment as false and highlight the discrepancies."
+    )
 
     "Considering the goal and the resources required, generate a question that should ask the user to gather their preferences effectively. This question should aim to obtain crucial information aligned with the goal and enable the chatbot to provide personalized recommendations based on the user's preferences. Ensure that the reply incorporates most relevant information and maintains coherence with the conversation."
     USER_PREFERENCE_PROMPT = compose_prompt(

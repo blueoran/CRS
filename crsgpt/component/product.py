@@ -5,6 +5,13 @@ from fuzzywuzzy import process
 from crsgpt.communicate.communicate import *
 from crsgpt.prompter.prompter import *
 
+import asyncio
+from aiohttp import ClientSession
+from concurrent.futures import ThreadPoolExecutor
+
+
+
+
 
 class Product:
     def __init__(self,top_k,file_logger,product_detail_path,update_product,verbose,files):
@@ -70,7 +77,6 @@ class Product:
                     },
                     f,
                 )
-            import pdb;pdb.set_trace()
         self.current_product_sum=""
         if self.verbose:
             print(self.product_summary)
@@ -177,15 +183,139 @@ class Product:
             actually_selected=self.fuzzy_match(part_selected_product_title,selected_products['title'].iloc[i*batch_size:end])
             actually_selected_sum={product:part_selected_product_summary[actually_selected[product]] for product in actually_selected.keys()}
             actually_selected_description={product:part_select_products[part_select_products['title']==product].iloc[0]['description'] for product in actually_selected.keys()}
-            selected_product_summary=dict(selected_product_summary, **actually_selected_sum)
-            selected_product_description=dict(selected_product_description, **actually_selected_description)
+            
+            if len(actually_selected_description)==0:
+                continue
+            
+            
+            actually_selected_description_filtered = {}
+            actually_selected_product_sum_filtered = {}
+            for p in actually_selected_description:
+                verify_selected_product_answer=general_json_chat(
+                    self.file_logger,self.verbose,
+                    compose_messages(
+                        {'s':compose_system_prompts(
+                            {'prompt':Prompter.SYSTEM_PROMPT},
+                            {'prompt':Prompter.PRODUCT_VERIFY_PROMPT},
+                            {'attribute':'Goal','content':goal},
+                            {'attribute':'Instruction','content':instruction},
+                            {'attribute':'Chat History','content':context[:-1]},
+                            {'attribute':'User Input','content':context[-1]},
+                            {'attribute':'User Preference','content':preference},
+                            {'attribute':'Selected Products','content':actually_selected_description[p]},
+                            {'attribute':'Key features that the selected products should have','content':product_features},
+                        )}
+                    ),
+                    "product_verify",max_tokens=100
+                )
+                alignment=verify_selected_product_answer['Alignment']
+                comment=verify_selected_product_answer['Comments']
+                # if alignment==True:
+                actually_selected_description_filtered[p] = \
+                    f'{actually_selected_description[p]}\n***Alignment: {alignment}***\n***Comment: {comment}***\n'
+                actually_selected_product_sum_filtered[p]=actually_selected_sum[p]
+                
+            
+            selected_product_summary=dict(selected_product_summary, **actually_selected_product_sum_filtered)
+            selected_product_description=dict(selected_product_description, **actually_selected_description_filtered)
         return selected_product_summary, selected_product_description
+
+
+
+    def process_batch(self, i, batch_size, selected_products, goal, instruction, context, preference, product_features):
+        if (i+1)*batch_size>len(selected_products):
+            end=len(selected_products)
+        else:
+            end=(i+1)*batch_size
+
+        part_select_products=selected_products.iloc[i*batch_size:end]
+        part_selected_product_answer=general_json_chat(
+            self.file_logger,self.verbose,
+            compose_messages(
+                {'s':compose_system_prompts(
+                    {'prompt':Prompter.SYSTEM_PROMPT},
+                    {'prompt':Prompter.PRODUCT_SEEK_PROMPT},
+                    {'attribute':'Goal','content':goal},
+                    {'attribute':'Instruction','content':instruction},
+                    {'attribute':'Chat History','content':context[:-1]},
+                    {'attribute':'User Input','content':context[-1]},
+                    {'attribute':'User Preference','content':preference},
+                    {'attribute':'Key points of products that previously selected from the database', 'content':'None'},
+                    {'attribute':'Key features that the selected products should have','content':product_features},
+                    {'attribute':'Current products that you should select from',
+                        'content':'\n'.join((part_select_products['title']+': '+part_select_products['description']).tolist())},
+                )}
+            ),
+            "product_seek_large",max_tokens=500
+        )
+        part_selected_product_title=part_selected_product_answer['Products Selected from Current Given Products']
+        part_selected_product_summary=part_selected_product_answer['Products Summary']
+        actually_selected=self.fuzzy_match(part_selected_product_title,selected_products['title'].iloc[i*batch_size:end])
+        actually_selected_sum={product:part_selected_product_summary[actually_selected[product]] for product in actually_selected.keys()}
+        actually_selected_description={product:part_select_products[part_select_products['title']==product].iloc[0]['description'] for product in actually_selected.keys()}
+        
+        
+        actually_selected_description_filtered = {}
+        actually_selected_product_sum_filtered = {}
+        for p in actually_selected_description:
+            verify_selected_product_answer=general_json_chat(
+                self.file_logger,self.verbose,
+                compose_messages(
+                    {'s':compose_system_prompts(
+                        {'prompt':Prompter.SYSTEM_PROMPT},
+                        {'prompt':Prompter.PRODUCT_VERIFY_PROMPT},
+                        {'attribute':'Goal','content':goal},
+                        {'attribute':'Instruction','content':instruction},
+                        {'attribute':'Chat History','content':context[:-1]},
+                        {'attribute':'User Input','content':context[-1]},
+                        {'attribute':'User Preference','content':preference},
+                        {'attribute':'Selected Products','content':actually_selected_description[p]},
+                        {'attribute':'Key features that the selected products should have','content':product_features},
+                    )}
+                ),
+                "product_verify",max_tokens=100
+            )
+            alignment=verify_selected_product_answer['Alignment']
+            comment=verify_selected_product_answer['Comments']
+            actually_selected_description_filtered[p] = \
+                f'{actually_selected_description[p]}\n***Alignment: {alignment}***\n***Comment: {comment}***\n'
+            actually_selected_product_sum_filtered[p]=actually_selected_sum[p]
+
+        return actually_selected_product_sum_filtered, actually_selected_description_filtered
+
+
+    def seek_products_multi(self, goal, instruction, preference, context, selected_products, batch_size=10, max_workers=5):  # max_workers can be adjusted as needed
+        product_features = general_json_chat(
+            self.file_logger,self.verbose,
+            compose_messages(
+                {'s':compose_system_prompts(
+                    {'prompt':Prompter.SYSTEM_PROMPT},
+                    {'prompt':Prompter.PRODUCT_FEATURE_PROMPT},
+                    {'attribute':'Goal','content':goal},
+                    {'attribute':'Instruction','content':instruction},
+                    {'attribute':'User Preference','content':preference},
+                )}
+            ),
+            "product_feature",max_tokens=300,concerened_key="Product Feature"
+        )
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(self.process_batch, i, batch_size, selected_products, goal, instruction, context, preference, product_features) for i in range(len(selected_products)//batch_size+1)]
+
+        combined_product_summary = {}
+        combined_product_description = {}
+        for future in futures:
+            res = future.result()
+            combined_product_summary.update(res[0])
+            combined_product_description.update(res[1])
+
+        return combined_product_summary, combined_product_description
 
     def select_products_large(self,goal,instruction,preference,context):
         selected_product_type=self.select_product_type(goal,instruction,preference,context)
         # import pdb;pdb.set_trace()
         filtered_product=self.product_info[self.product_info['type'].isin(selected_product_type)]
-        selected_product_summary,selected_product_description=self.seek_products(goal,instruction,preference,context,filtered_product)
+        selected_product_summary,selected_product_description=self.seek_products_multi(goal,instruction,preference,context,filtered_product)
         # product_string='\n'.join(list(selected_product_summary.values()))
         product_string = '\n'.join([f'{k}: {v}' for k, v in selected_product_description.items()])
         self.file_logger.info(f"Selected products: {product_string}")
@@ -194,6 +324,8 @@ class Product:
         # product_summary_list=self.product_summary[self.product_name.isin(product_selected)]
         # self.current_product_sum='\n'.join((product_summary_list['title']+': '+product_summary_list['description']).tolist())
         return product_string
+    
+
 
     def select_products(self,goal,instruction,preference,context):
         selected_products = general_json_chat(
