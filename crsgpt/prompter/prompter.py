@@ -39,8 +39,8 @@ class Prompter:
 
 
     RECOMMEND_RATING_PROMPT_EXPLICIT = compose_prompt(
-        "Evaluate the likelihood that the user requires the recommendation system instead of just a chatbot.",
-        "Consider if the user's intent needs product-specific to response, which may involves seeking detailed product information, summarizing products, comparing products, or explicitly or implicitly asking for recommendations.",
+        "Evaluate the likelihood that the user requires the recommendation system use its database to response instead of just a chatbot.",
+        "Consider if the user's intent needs product-specific details or attribute values to response, which may involves seeking detailed product information, summarizing products, comparing products, or explicitly or implicitly asking for recommendations. If so, the user needs the recommendation system to serve.",
         "The user's current input and the ongoing conversation context.",
         "Provide a probability score from 0 to 9. A score below 5 suggests the user mainly needs chatbot interaction. Ensure the score is appropriate to the user's intent. Please briefly explain your scoring reasons and provide an appropriate score."
     )
@@ -112,7 +112,7 @@ class Prompter:
         "Determine the resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
         "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
         "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
-        "Be open to ask for more relevant prroducts."
+        "Be open to ask for more relevant products."
     )
     # RESOURCES_PROMPT = compose_prompt(
     #     "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",

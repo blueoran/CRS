@@ -96,13 +96,14 @@ def general_json_chat(
         )}
     )
     assistant_reply_json = chat(message, schema_name,file_logger, **kwargs)
-    for i in range(3):
+    while True:
         if assistant_reply_json["success"] is True or strict_mode is False:
             break
         message_send = compose_messages(
             *message,
             {"s":f"Your response ```{assistant_reply_json['val']} ``` cannot be parsed using `ast.literal_eval` because {assistant_reply_json['error']} \n\n Please respond with only valid JSON conforming to the following schema: \n{llm_response_schema(schema_name)}\n"}
         )
+        kwargs['temperature']=1
         assistant_reply_json = chat(message_send, schema_name,file_logger, **kwargs)
         time.sleep(1)
 

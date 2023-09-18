@@ -8,7 +8,7 @@
         },
         "Comments": {
             "type": "string",
-            "description": "Additional remarks about the alignment, including discrepancies if any.",
+            "description": "Additional remarks about the alignment, only point out the key aspects briefly.",
             "additionalProperties": false
         }
     },

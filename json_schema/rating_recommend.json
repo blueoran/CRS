@@ -4,6 +4,7 @@
     "properties": {
         "recommend score":{
             "type": "integer",
+            "description": "The likelihood that the user requires the recommendation system instead of just a chatbot",
             "additionalProperties": false
         }
     },

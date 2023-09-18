@@ -134,6 +134,7 @@ class Agent:
                 result={'faults/hallucinations': True, 'feedback': '', 'suggestions': ''}
                 previous_output=""
                 for i in range(3):
+                # while True:
                     if type(result) is str:
                         result = {'faults/hallucinations': "false" in result.lower(), 'feedback': result, 'suggestions': result}
 
@@ -163,7 +164,7 @@ class Agent:
                         ),
                         "response_explicit" if self.explicit else "response","response"
                         ,max_tokens=400,complete_mode=True,
-                        context=self.context
+                        context=self.context, temperature=0.5 if result['feedback']!='' else 0
                     )
 
                     result=self.evaluator.evaluate(self.context,self.output,self.preference.user_preference,self.product_selected)

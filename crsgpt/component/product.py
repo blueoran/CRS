@@ -249,9 +249,9 @@ class Product:
             "product_seek_large",max_tokens=500
         )
         part_selected_product_title=part_selected_product_answer['Products Selected from Current Given Products']
-        part_selected_product_summary=part_selected_product_answer['Products Summary']
+        # part_selected_product_summary=part_selected_product_answer['Products Summary']
         actually_selected=self.fuzzy_match(part_selected_product_title,selected_products['title'].iloc[i*batch_size:end])
-        actually_selected_sum={product:part_selected_product_summary[actually_selected[product]] for product in actually_selected.keys()}
+        # actually_selected_sum={product:part_selected_product_summary[actually_selected[product]] for product in actually_selected.keys()}
         actually_selected_description={product:part_select_products[part_select_products['title']==product].iloc[0]['description'] for product in actually_selected.keys()}
         
         
@@ -279,7 +279,7 @@ class Product:
             comment=verify_selected_product_answer['Comments']
             actually_selected_description_filtered[p] = \
                 f'{actually_selected_description[p]}\n***Alignment: {alignment}***\n***Comment: {comment}***\n'
-            actually_selected_product_sum_filtered[p]=actually_selected_sum[p]
+            # actually_selected_product_sum_filtered[p]=actually_selected_sum[p]
 
         return actually_selected_product_sum_filtered, actually_selected_description_filtered
 
