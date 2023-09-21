@@ -96,18 +96,39 @@ def general_json_chat(
         )}
     )
     assistant_reply_json = chat(message, schema_name,file_logger, **kwargs)
-    while True:
-        if assistant_reply_json["success"] is True or strict_mode is False:
-            break
+    
+    if not (assistant_reply_json["success"] is True or strict_mode is False):
         message_send = compose_messages(
             *message,
             {"s":f"Your response ```{assistant_reply_json['val']} ``` cannot be parsed using `ast.literal_eval` because {assistant_reply_json['error']} \n\n Please respond with only valid JSON conforming to the following schema: \n{llm_response_schema(schema_name)}\n"}
         )
         kwargs['temperature']=1
         assistant_reply_json = chat(message_send, schema_name,file_logger, **kwargs)
-        time.sleep(1)
 
     assistant_reply = assistant_reply_json["val"]
+
+    if not (assistant_reply_json["success"] is True or strict_mode is False):
+        # import pdb;pdb.set_trace()
+        assistant_reply = {}
+        flag = False
+        for k in llm_response_schema(schema_name)["properties"]:
+            if llm_response_schema(schema_name)["properties"][k]['type'] == "boolean":
+                assistant_reply[k] = True
+            elif llm_response_schema(schema_name)["properties"][k]['type'] == "string":
+                if flag is False:
+                    assistant_reply[k] = assistant_reply_json["val"]
+                    flag = True
+                else:
+                    assistant_reply[k] = ""
+            elif llm_response_schema(schema_name)["properties"][k]['type'] == "integer":
+                assistant_reply[k] = 9
+            elif llm_response_schema(schema_name)["properties"][k]['type'] == "array":
+                if flag is False:
+                    assistant_reply[k] = [assistant_reply_json["val"]]
+                    flag = True
+                else:
+                    assistant_reply[k] = []
+
     if verbose:
         print(assistant_reply)
 
