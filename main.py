@@ -9,7 +9,6 @@ from crsgpt.component.preference import *
 parser = argparse.ArgumentParser(description = 'test')
 
 parser.add_argument('--top_K', type=int, default=50, help='top K products to recommend')
-parser.add_argument('--api_key', type=str, default="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",help='openai api key')
 parser.add_argument('--log_file', type=str, default="./logs/test.log",help='log file path')
 parser.add_argument('--update_product', action='store_true', default=False,help='whether to update product details')
 parser.add_argument('--product_detail_path', type=str, default="./data/summary.json",help='product details json save path')
@@ -72,7 +71,6 @@ if __name__=='__main__':
     file_logger.setLevel(args.log_level)
     file_hander = logging.FileHandler(args.log_file)
     file_logger.addHandler(file_hander)
-    openai.api_key=args.api_key
 
 
     if args.testcase is None:

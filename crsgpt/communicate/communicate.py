@@ -3,8 +3,14 @@ from crsgpt.utils.json_utilities import *
 from crsgpt.prompter.prompter import *
 import time
 import os
+import random
 
-
+api_keys=[]
+def api_init():
+    with open('./api.cfg') as f:
+        for line in f.readlines():
+            api_keys.append(line.strip())
+    print(api_keys)
 
 
 def compose_system_prompts(*prompts):
@@ -43,6 +49,8 @@ def compose_messages(*messages):
 
 def chat(message, schema_name,file_logger, **kwargs):
     file_logger.info(f"Chat: {message}")
+    global api_keys
+    openai.api_key = random.choice(api_keys)
     while True:
         try:
             completion = openai.ChatCompletion.create(

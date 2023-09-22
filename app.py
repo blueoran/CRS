@@ -23,7 +23,6 @@ app = Flask(__name__)
 app.config['PERMANENT_SESSION_LIFETIME'] = 1 
 #### Configurations
 top_K=50
-openai.api_key="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"
 update_product=False
 product_detail_path="./data/summary.json"
 log_level=logging.DEBUG

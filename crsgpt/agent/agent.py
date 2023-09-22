@@ -40,6 +40,8 @@ class Agent:
         self.resources = {'product':'','preference':''}
         self.fsm=RecommendFSM(self.products.product_type_set,self.file_logger,
                               self.verbose,self.explicit)
+        
+        api_init()
 
 
     def user_interactive(self,user_message):
