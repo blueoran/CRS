@@ -164,7 +164,7 @@ class Agent:
                         ),
                         "response_explicit" if self.explicit else "response","response"
                         ,max_tokens=400,complete_mode=True,
-                        context=self.context, temperature=2 if result['feedback']!='' else 0
+                        context=self.context, temperature=1 if result['feedback']!='' else 0
                     )
 
                     result=self.evaluator.evaluate(self.context,self.output,self.preference.user_preference,self.product_selected)
