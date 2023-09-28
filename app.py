@@ -24,11 +24,12 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 1
 #### Configurations
 top_K=50
 update_product=False
-product_detail_path="./data/summary.json"
+embedding_cache_path="./data/recommendations_embeddings_cache.pkl"
 log_level=logging.DEBUG
 explicit=False
 verbose=False
 testcase=None
+api_init()
 
 product_dict = {
     './data/2022_movie.csv':'Title',
@@ -56,7 +57,7 @@ def create_instance(user_id):
 
     user_instances[user_id] = {
         'log_file': file_logger,
-        'product': Product(top_K, file_logger, product_detail_path, update_product, verbose, product_dict),
+        'product': Product(top_K, file_logger, embedding_cache_path, update_product, verbose, product_dict),
         'preference': Preference(file_logger, verbose),
     }
     user_instances[user_id]['evaluator'] = Evaluator(file_logger, user_instances[user_id]['product'].product_type_set, verbose)

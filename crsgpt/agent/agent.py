@@ -40,18 +40,19 @@ class Agent:
         self.resources = {'product':'','preference':''}
         self.fsm=RecommendFSM(self.products.product_type_set,self.file_logger,
                               self.verbose,self.explicit)
-        
-        api_init()
 
 
     def user_interactive(self,user_message):
 
         self.file_logger.info(f"User: {user_message}")
         start_time = time.time()
+        prev_time = start_time
         self.context.append(f"User: {user_message}")
 
         prev_status = self.fsm.status
         cur_status = self.fsm.recommend_fsm(self.context)
+        self.file_logger.info(f"FSM Time elapsed: {time.time()-start_time}")
+        prev_time = time.time()
         if cur_status == "Chatbot":
             if prev_status == "Recommend":
                 self.start_chat = len(self.context)-1
@@ -69,6 +70,7 @@ class Agent:
                 "chatbot","response",complete_mode=True,
                 context=f'{self.context}'
             )
+            self.file_logger.info(f"Chatbot Time elapsed: {time.time()-prev_time}")
 
         elif cur_status == "Recommend":
             if prev_status == "Chatbot":
@@ -116,18 +118,22 @@ class Agent:
                         {'attribute':'Goal','content':goal},
                         {'attribute':'Instruction','content':instruction},
                         {'attribute':'User Preference','content':self.preference.user_preference},
-                        # {'attribute':'Resources','content':self.resources},
+                        {'attribute':'Resources','content':self.resources},
                         {'attribute':'Chat History','content':self.context[:-1]},
                         {'attribute':'User Input','content':self.context[-1]}
                     )},
                 ),
                 "required_resource"
             )
+            self.file_logger.info(f"Basic info Time elapsed: {time.time()-prev_time}")
+            prev_time = time.time()
 
 
             if required_resource["need_product_details"] is True:
                 self.product_selected = self.products.select_products_large(goal,instruction,self.preference.user_preference,self.context)
                 self.resources["product"] = self.product_selected
+                self.file_logger.info(f"Product selection Time elapsed: {time.time()-prev_time}")
+                prev_time = time.time()
 
             if required_resource["need_user_preference"] is True:
                 self.output = self.preference.ask_preference(goal,instruction,self.resources,self.context)
@@ -135,7 +141,7 @@ class Agent:
             else:
                 result={'faults/hallucinations': True, 'feedback': '', 'suggestions': ''}
                 previous_output=""
-                for i in range(3):
+                for i in range(1):
                 # while True:
                     if type(result) is str:
                         result = {'faults/hallucinations': "false" in result.lower(), 'feedback': result, 'suggestions': result}
@@ -169,8 +175,9 @@ class Agent:
                         context=self.context, temperature=1 if result['feedback']!='' else 0
                     )
 
-                    result=self.evaluator.evaluate(self.context,self.output,self.preference.user_preference,self.product_selected)
+                    # result=self.evaluator.evaluate(self.context,self.output,self.preference.user_preference,self.product_selected)
                     previous_output=self.output
+                    self.file_logger.info(f"Recommendation Time elapsed: {time.time()-prev_time}")
 
         self.context.append(f"System: {self.output}")
         self.file_logger.info(f"System: {self.output}")

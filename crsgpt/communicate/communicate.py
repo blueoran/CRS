@@ -7,6 +7,7 @@ import random
 
 api_keys=[]
 def api_init():
+    global api_keys
     with open('./api.cfg') as f:
         for line in f.readlines():
             api_keys.append(line.strip())

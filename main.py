@@ -8,10 +8,11 @@ from crsgpt.component.preference import *
 
 parser = argparse.ArgumentParser(description = 'test')
 
+parser.add_argument('--head_K', type=int, default=5, help='head K products in system')
 parser.add_argument('--top_K', type=int, default=50, help='top K products to recommend')
-parser.add_argument('--log_file', type=str, default="./logs/test.log",help='log file path')
+parser.add_argument('--log_file', type=str, default="./logs/db.log",help='log file path')
 parser.add_argument('--update_product', action='store_true', default=False,help='whether to update product details')
-parser.add_argument('--product_detail_path', type=str, default="./data/summary.json",help='product details json save path')
+parser.add_argument('--embedding_cache_path', type=str, default="./data/recommendations_embeddings_cache.pkl",help='product details json save path')
 parser.add_argument('--log_level', type=int, default=logging.DEBUG,help='log level')
 parser.add_argument('--explicit', action='store_true',help='whether to explicitly show the thinking of the recommendation gpt')
 parser.add_argument('--verbose', action='store_true',help='whether to show the process of the recommendation')
@@ -29,7 +30,7 @@ product_dict = {
 }
 
 def main_loop(testcase=None):
-    product=Product(args.top_K,file_logger,args.product_detail_path,
+    product=Product(args.head_K,file_logger,args.embedding_cache_path,args.top_K,
                     args.update_product,args.verbose,product_dict)
     preference=Preference(file_logger,args.verbose)
     evaluator=Evaluator(file_logger,product.product_type_set,args.verbose)
@@ -71,6 +72,8 @@ if __name__=='__main__':
     file_logger.setLevel(args.log_level)
     file_hander = logging.FileHandler(args.log_file)
     file_logger.addHandler(file_hander)
+    
+    api_init()
 
 
     if args.testcase is None:
