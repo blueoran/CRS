@@ -22,7 +22,8 @@ import threading
 app = Flask(__name__)
 app.config['PERMANENT_SESSION_LIFETIME'] = 1 
 #### Configurations
-top_K=50
+top_K=5
+head_K=50
 update_product=False
 embedding_cache_path="./data/recommendations_embeddings_cache.pkl"
 log_level=logging.DEBUG
@@ -57,7 +58,7 @@ def create_instance(user_id):
 
     user_instances[user_id] = {
         'log_file': file_logger,
-        'product': Product(top_K, file_logger, embedding_cache_path, update_product, verbose, product_dict),
+        'product': Product(head_K, file_logger, embedding_cache_path, top_K, update_product, verbose, product_dict),
         'preference': Preference(file_logger, verbose),
     }
     user_instances[user_id]['evaluator'] = Evaluator(file_logger, user_instances[user_id]['product'].product_type_set, verbose)
@@ -92,15 +93,15 @@ def index():
 
         try:
             # Create a thread to execute the worker function
-            from copy import deepcopy
-            copied_user_instances = deepcopy(user_instances[user_id])
+            from copy import copy
+            copied_user_instances = copy(user_instances[user_id]['rec'])
             worker_thread = threading.Thread(target=worker_function, args=(user_id, user_input))
             worker_thread.start()
             worker_thread.join(timeout=70)  # Set a timeout for the thread execution
             if worker_thread.is_alive():
                 # Handle the timeout here
                 result_rec = f"Sorry, the response is taking too long. Please try again."
-                user_instances[user_id] = copied_user_instances
+                user_instances[user_id]['rec'] = copied_user_instances
                 
             else:
                 # Thread has completed, get the return value
