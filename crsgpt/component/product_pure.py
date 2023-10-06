@@ -113,7 +113,7 @@ class Product:
             compose_messages(
                 {'s':compose_system_prompts(
                     {'prompt':Prompter.SYSTEM_PROMPT},
-                    {'prompt':Prompter.PRODUCT_TYPE_PROMPT},
+                    {'prompt':Prompter.PRODUCT_TYPE_SELECT_PROMPT},
                     {'attribute':'Goal','content':goal},
                     {'attribute':'Instruction','content':instruction},
                     {'attribute':'User Preference','content':preference},

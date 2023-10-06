@@ -4,7 +4,7 @@
     "properties": {
         "Prompt": {
             "type": "string",
-            "description": "Prompt for the Vector Database to select the most appropriate product that can achieve the goal.",
+            "description": "Prompt that describes the features of the potential products for the Vector Database to select the most appropriate product that can achieve the goal.",
             "additionalProperties": false
         }
     },

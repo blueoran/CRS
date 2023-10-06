@@ -33,6 +33,12 @@ class Prompter:
         "the detailed product information of this product",
         None
     )
+    PRODUCT_TYPE_SUM_PROMPT = compose_prompt(
+        f"Define what type this product belongs to, then extract and summarize key features for this product",
+        "Consider the features that are concerend by most people, and are most important for the recommendation system to achieve the goal",
+        "the detailed product information of this product",
+        None
+    )
 
     'Your task is to assess the probability that the user currently needs a recommendation system to serve for products recommendation or summary, comparison, list in detail etc. based on user\'s cureent input and the context of the conversation.\n\nTo score this probability, you should consider various factors, such as: User Intent, Previous Interactions, Contextual Keywords, User Engagement, Recommendation Process\n\nUsing these factors, please develop an algorithm that assigns a probability score between 0 and 9, indicating the likelihood that the user currently requires a recommendation system to serve. Please briefly explain your scoring reasons and provide an appropriate score.'
     
@@ -133,7 +139,7 @@ class Prompter:
 
 
     "Given the goal, instruction, context, and resources, please select what types of the products are necessary for the recommendation system to achieve the goal."
-    PRODUCT_TYPE_PROMPT = compose_prompt(
+    PRODUCT_TYPE_SELECT_PROMPT = compose_prompt(
         "Select what types of the products are necessary for the recommendation system to achieve the goal.",
         "Consider all the given resources, especially the user input and user preference",
         "the goal, instruction, user preference, context, the user's input, and available product types",
@@ -162,7 +168,7 @@ class Prompter:
     )
     "Given the goal, instruction, context, resources and the recommend system's summary of the previous selection, please select the products from the following provided products to add to the previous selection, so that the selection of products can make the recommendation system to achieve the goal. You should also summarize each product's description from what you select by the key point that can response to the user's requests. In the end, you should also determine whether the previous together with your current selection to the products are enough for the system to achieve the goal and all the use requests."
     PRODUCT_SEARCH_PROMPT = compose_prompt(
-        "Generate a prompt for the vector database to select the products that are most appropriate and necessary for the recommendation system to achieve the goal.",
+        "Generate a prompt that describes the features of the potential products for the vector database to select the products that are most appropriate and necessary for the recommendation system to achieve the goal.",
         """
         Analyze the given resources, especially the user input, user preference and the key features that the selected products. Then accurately summarize the product features that the products should have with detailed information. Finally generate an appropriate prompt for vector database to find out appropriate products.
         """,

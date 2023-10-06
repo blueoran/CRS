@@ -1,0 +1,16 @@
+{
+
+    "type": "object",
+    "properties": {
+        "product_type":{
+            "type": "string",
+            "additionalProperties": false
+        },
+        "product_summary": {
+            "type": "string",
+            "description": "A brief summary of the key features of the product that the common customer would be interested in.",
+            "additionalProperties": false
+        }
+    },
+        "required": ["product_type", "product_summary"]
+}

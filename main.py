@@ -8,8 +8,8 @@ from crsgpt.component.preference import *
 
 parser = argparse.ArgumentParser(description = 'test')
 
-parser.add_argument('--head_K', type=int, default=5, help='head K products in system')
-parser.add_argument('--top_K', type=int, default=50, help='top K products to recommend')
+parser.add_argument('--head_K', type=int, default=50, help='head K products in system')
+parser.add_argument('--top_K', type=int, default=5, help='top K products to recommend')
 parser.add_argument('--log_file', type=str, default="./logs/db.log",help='log file path')
 parser.add_argument('--update_product', action='store_true', default=False,help='whether to update product details')
 parser.add_argument('--embedding_cache_path', type=str, default="./data/recommendations_embeddings_cache.pkl",help='product details json save path')

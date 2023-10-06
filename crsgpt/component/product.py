@@ -7,6 +7,7 @@ from crsgpt.prompter.prompter import *
 from concurrent.futures import ThreadPoolExecutor
 import pickle
 import numpy as np
+from tqdm import trange
 from openai.embeddings_utils import (
     get_embedding,
     distances_from_embeddings,
@@ -37,7 +38,7 @@ class Product:
         self.files_pandas=[]
         for f,t in self.file_to_title.items():
             file=pd.read_csv(f)
-            file.rename(columns={t:'title'},inplace=True)
+            file.rename(columns={t:"name"},inplace=True)
             if self.head_k is not None:
                 file=file.iloc[:self.head_k].copy()
             self.files_pandas.append(file)
@@ -49,7 +50,7 @@ class Product:
             )
             product["type"] = ""
         self.product_info = pd.concat(
-            [p[["title", "type", "description"]] for p in self.files_pandas],
+            [p[["name", "type", "description"]] for p in self.files_pandas],
             ignore_index=True,
         )
 
@@ -63,7 +64,7 @@ class Product:
         with open(self.embedding_cache_path, "wb") as self.embedding_cache_file:
             pickle.dump(self.embedding_cache, self.embedding_cache_file)
 
-        for i in range(len(self.product_info)):
+        for i in trange(len(self.product_info)):
             product = self.product_info.iloc[i]
             product_type, product_embedding = self.embedding_from_string(product["description"])
             product["type"] = product_type
@@ -76,12 +77,12 @@ class Product:
             compose_messages(
                 {'s':compose_system_prompts(
                     {'prompt':Prompter.SYSTEM_PROMPT},
-                    {'prompt':Prompter.PRODUCT_TYPE_PROMPT},
+                    {'prompt':Prompter.PRODUCT_TYPE_SUM_PROMPT},
                     {'attribute':'Product Detail','content':product},
                 )}
             ),
-            "product_type",max_tokens=100,concerened_key="product_type"
-        ).lower()
+            "product_type_sum",max_tokens=250
+        )
         return product_parse
 
 
@@ -94,8 +95,15 @@ class Product:
     ) -> list:
         """Return embedding of given string, using a cache to avoid recomputing."""
         if (product, model) not in self.embedding_cache.keys():
-            product_type = self.summarize_product_type(product)
-            self.embedding_cache[(product, model)] = (product_type,get_embedding(product, model))
+            product_type_sum = self.summarize_product_type(product)
+            product += f";Product Type: {product_type_sum['product_type']};Product Summary: {product_type_sum['product_summary']}"
+            success = False
+            while not success:
+                try:
+                    self.embedding_cache[(product, model)] = (product_type_sum['product_type'].lower(),get_embedding(product, model))
+                    success = True
+                except:
+                    pass
             with open(self.embedding_cache_path, "wb") as self.embedding_cache_file:
                 pickle.dump(self.embedding_cache, self.embedding_cache_file)
         return self.embedding_cache[(product, model)]
@@ -106,7 +114,7 @@ class Product:
             compose_messages(
                 {'s':compose_system_prompts(
                     {'prompt':Prompter.SYSTEM_PROMPT},
-                    {'prompt':Prompter.PRODUCT_TYPE_PROMPT},
+                    {'prompt':Prompter.PRODUCT_TYPE_SELECT_PROMPT},
                     {'attribute':'Goal','content':goal},
                     {'attribute':'Instruction','content':instruction},
                     {'attribute':'User Preference','content':preference},
@@ -158,7 +166,7 @@ class Product:
         )
         alignment = verify_selected_product_answer['Alignment']
         comment = verify_selected_product_answer['Comments']
-        return {self.product_info["title"].iloc[idx]:f'{self.product_info["description"].iloc[idx]}\n***Alignment: {alignment}***\n***Comment: {comment}***\n'}
+        return {self.product_info["name"].iloc[idx]:f'{self.product_info["description"].iloc[idx]}\n***Alignment: {alignment}***\n***Comment: {comment}***\n'}
 
 
 
