@@ -94,19 +94,20 @@ class Product:
         model: str = "text-embedding-ada-002",
     ) -> list:
         """Return embedding of given string, using a cache to avoid recomputing."""
+        ori_product = product
         if (product, model) not in self.embedding_cache.keys():
             product_type_sum = self.summarize_product_type(product)
             product += f";Product Type: {product_type_sum['product_type']};Product Summary: {product_type_sum['product_summary']}"
             success = False
             while not success:
                 try:
-                    self.embedding_cache[(product, model)] = (product_type_sum['product_type'].lower(),get_embedding(product, model))
+                    self.embedding_cache[(ori_product, model)] = (product_type_sum['product_type'].lower(),get_embedding(product, model))
                     success = True
                 except:
                     pass
             with open(self.embedding_cache_path, "wb") as self.embedding_cache_file:
                 pickle.dump(self.embedding_cache, self.embedding_cache_file)
-        return self.embedding_cache[(product, model)]
+        return self.embedding_cache[(ori_product, model)]
 
     def select_product_type(self,goal,instruction,preference,context):
         selected_product_type = general_json_chat(
