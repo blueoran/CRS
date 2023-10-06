@@ -97,7 +97,7 @@ def index():
             copied_user_instances = copy(user_instances[user_id]['rec'])
             worker_thread = threading.Thread(target=worker_function, args=(user_id, user_input))
             worker_thread.start()
-            worker_thread.join(timeout=70)  # Set a timeout for the thread execution
+            worker_thread.join(timeout=50)  # Set a timeout for the thread execution
             if worker_thread.is_alive():
                 # Handle the timeout here
                 result_rec = f"Sorry, the response is taking too long. Please try again."
