@@ -1,0 +1,20 @@
+{
+    "type": "object",
+    "properties": {
+        "PositivePrompts": {
+            "type": "array",
+            "description": "List of prompts that describe the desired features of potential products. These prompts will guide the Vector Database to focus on products that possess these positive attributes.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "NegativePrompts": {
+            "type": "array",
+            "description": "List of prompts that indicate undesired or contradictory features of products. These prompts will guide the Vector Database to exclude products that exhibit these negative attributes.",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": ["PositivePrompts", "NegativePrompts"]
+}

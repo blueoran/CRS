@@ -19,6 +19,7 @@ parser.add_argument('--verbose', action='store_true',help='whether to show the p
 parser.add_argument('--testcase', type=str, default=None,help='testcase')
 parser.add_argument('--product_gpt', action='store_true')
 parser.add_argument('--pure_gpt', action='store_true')
+parser.add_argument('--web', action='store_true')
 
 args = parser.parse_args()
 
@@ -34,7 +35,7 @@ def main_loop(testcase=None):
                     args.update_product,args.verbose,product_dict)
     preference=Preference(file_logger,args.verbose)
     evaluator=Evaluator(file_logger,product.product_type_set,args.verbose)
-    rec=Agent(product,preference,evaluator,file_logger,args.explicit,args.verbose)
+    rec=Agent(product,preference,evaluator,file_logger,args.explicit,args.verbose,args.web)
     gpt_rec=PureGPT(file_logger)
     product_gpt=ProductGPT(product,file_logger,args.explicit,args.verbose)
 

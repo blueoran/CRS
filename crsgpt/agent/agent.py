@@ -9,6 +9,7 @@ from crsgpt.evaluator.evaluator import *
 from crsgpt.utils.utils import *
 from crsgpt.prompter.prompter import *
 from crsgpt.agent.chatfsm import *
+from crsgpt.component.web import *
 
 
 
@@ -21,7 +22,8 @@ class Agent:
         evaluator,
         file_logger,
         explicit=False,
-        verbose=False
+        verbose=False,
+        web=False
     ):
         self.file_logger=file_logger
 
@@ -32,6 +34,9 @@ class Agent:
         self.products=products
         self.preference=preference
         self.verbose=verbose
+        self.web=web
+        if self.web:
+            self.web_resource = WEB(file_logger,verbose)
         self.output = ""
         self.product_selected=""
 
@@ -83,6 +88,8 @@ class Agent:
 
             self.preference.update_preference(self.context)
             self.resources["preference"] = self.preference.user_preference
+            
+            # self.products.update_appeared_products(self.context)
 
             goal = general_json_chat(
                 self.file_logger,self.verbose,
@@ -109,33 +116,56 @@ class Agent:
                 "instruction","goal_instruction",strict_mode=False,max_tokens=150,
             )
 
+
+            resource_prompt = ""
+            resource_template = ""
+            if self.web is True:
+                if self.explicit is True:
+                    resource_prompt = Prompter.RESOURCES_PROMPT_WEB_EXPLICIT
+                    resource_template = "required_resource_web_explicit"
+                else:
+                    resource_prompt = Prompter.RESOURCES_PROMPT_WEB
+                    resource_template = "required_resource_web"
+            else:
+                if self.explicit is True:
+                    resource_prompt = Prompter.RESOURCES_PROMPT_EXPLICIT
+                    resource_template = "required_resource_explicit"
+                else:
+                    resource_prompt = Prompter.RESOURCES_PROMPT
+                    resource_template = "required_resource"
             required_resource = general_json_chat(
                 self.file_logger,self.verbose,
                 compose_messages(
                     {'s':compose_system_prompts(
                         {'prompt':Prompter.SYSTEM_PROMPT},
-                        {'prompt':Prompter.RESOURCES_PROMPT},
+                        {'prompt':resource_prompt},
                         {'attribute':'Goal','content':goal},
                         {'attribute':'Instruction','content':instruction},
                         {'attribute':'User Preference','content':self.preference.user_preference},
-                        {'attribute':'Resources','content':self.resources},
+                        # {'attribute':'Resources','content':self.resources},
                         {'attribute':'Chat History','content':self.context[:-1]},
                         {'attribute':'User Input','content':self.context[-1]}
                     )},
                 ),
-                "required_resource"
+                resource_template,
+                max_tokens=300 if self.explicit else 150,model="gpt-4"
             )
             self.file_logger.info(f"Basic info Time elapsed: {time.time()-prev_time}")
             prev_time = time.time()
 
 
-            if required_resource["need_product_details"] is True:
+            if required_resource.get("need_product_lists") is True:
                 self.product_selected = self.products.select_products_large(goal,instruction,self.preference.user_preference,self.context)
                 self.resources["product"] = self.product_selected
                 self.file_logger.info(f"Product selection Time elapsed: {time.time()-prev_time}")
                 prev_time = time.time()
+                
+            if required_resource.get("need_web_resources") is True:
+                self.resources["web"] = self.web_resource.get_relevant_documents(goal,instruction,self.preference.user_preference,self.context)
+                self.file_logger.info(f"Web resource Time elapsed: {time.time()-prev_time}")
+                prev_time = time.time()
 
-            if required_resource["need_user_preference"] is True:
+            if required_resource.get("need_user_preference") is True:
                 self.output = self.preference.ask_preference(goal,instruction,self.resources,self.context)
 
             else:
@@ -158,11 +188,11 @@ class Agent:
                                 {'attribute':'Goal','content':goal},
                                 {'attribute':'Instruction','content':instruction},
                                 {'attribute':'User Preference','content':self.preference.user_preference},
-                                {'attribute':'Product that you should focus on','content':self.product_selected},
+                                {'attribute':'Product that you should focus on','content':self.resources["product"] if required_resource.get("need_product_lists") is True else None},
+                                {'attribute':'Web Resources','content':self.resources.get("web",None) if required_resource.get("need_web_resources") is True else None},
                                 {'attribute':'Chat History','content':self.context[:-1]},
                                 {'attribute':'User Input','content':self.context[-1]},
                             )},
-                            # {'u':user_message},
                             {'s':compose_system_prompts(
                                 {'prompt':'**Please refer to the feedback and suggestion to the following possible output from a recommendation system to generate a better response**'},
                                 {'attribute':'Possible Output','content':previous_output},
@@ -178,6 +208,8 @@ class Agent:
                     # result=self.evaluator.evaluate(self.context,self.output,self.preference.user_preference,self.product_selected)
                     previous_output=self.output
                     self.file_logger.info(f"Recommendation Time elapsed: {time.time()-prev_time}")
+                    
+                self.products.update_past_selected_products()
 
         self.context.append(f"System: {self.output}")
         self.file_logger.info(f"System: {self.output}")

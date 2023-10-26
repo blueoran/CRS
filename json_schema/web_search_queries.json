@@ -1,0 +1,14 @@
+{
+    "type": "object",
+    "properties": {
+        "Queries": {
+            "type": "array",
+            "maxItems": 3,
+            "description": "List of google search queries for achieving the goal",
+            "items": {
+                "type": "string"
+            }
+        }
+    },
+    "required": ["Queries"]
+}

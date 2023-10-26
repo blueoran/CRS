@@ -1,0 +1,17 @@
+{
+    "type": "object",
+    "properties": {
+        "response": {
+            "type": "string",
+            "description": "response to the user's request",
+            "additionalProperties": false
+        },
+        "Products Selected": {
+            "type": "array",
+            "items": {"type": "string", "maxItems": 5},
+            "description": "Products that can be used to help to effectively achieve the desired goal and fulfill the user's requests.",
+            "additionalProperties": false
+        }
+    },
+        "required": ["response"]
+}

@@ -114,19 +114,25 @@ class Prompter:
 
     ["What aspect should I consider to achieve the goal of ", 'Please describe breifly']
     ACHIEVE_PROMPT = compose_prompt(
-        "Give instructions to the recommendation system to achieve the goal of the user's request.",
+        "Generate detailed steps as prompt that can instruct the chatgpt-based recommendation system to achieve the goal.",
         None,
         "the goal of the user's request",
         "Be brief and concise."
     )
     
     "Given the goal and the chat history provided, determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs. Remember you mustn't recommend products that are not given from the database. You should first consider to make the full use of the given context and user preference, determine whether you need more information from the user preference and from database, then request what you really need only among [ user preference, product details ] to assist in achieving the goal."
-    RESOURCES_PROMPT = compose_prompt(
-        "Determine the resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
-        "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
-        "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
-        "Be open to ask for more relevant products."
-    )
+    # RESOURCES_PROMPT = compose_prompt(
+    #     "Determine the resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+    #     "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
+    #     "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+    #     "Be open to ask for more relevant resources."
+    # )
+    # RESOURCES_PROMPT_EXPLICIT = compose_prompt(
+    #     "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+    #     "Take all the given resources into account. You should first consider to make the full use of the current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product lists ] to assist in achieving the goal.",
+    #     "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+    #     "Make the best use of the current given resources first. Summarize what do you have in current resource to meet the user's requirement, and why you need or don't need these resources."
+    # )
     # RESOURCES_PROMPT = compose_prompt(
     #     "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
     #     "Take all the given resources into account. You should first consider to make the full use of the given context and current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product details ] to assist in achieving the goal.",
@@ -134,8 +140,42 @@ class Prompter:
     #     "Make the best use of the current given resources first."
     # )
 
+    RESOURCES_PROMPT = compose_prompt(
+        "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+        "Take all the given resources into account. You should first consider to make the full use of the current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product lists ] to assist in achieving the goal. Please note that you should consider if the current resources can perfectly satisfy all the aspect of the user's needs, which means you need to be careful to say that you don't need any resources. If you need user's preference, the system will ask for the user's preference in the following; if you need the product lists, the system will search for needed products in the product database in the following.",
+        "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+        "Make the best use of the current given resources first. Summarize what do you have in current resource to meet the user's requirement, and why you need or don't need these resources. If you don't need any of them, you should be clear about why the current resources can perfectly satisfy all the aspect of the user's needs."
+    )
+    RESOURCES_PROMPT_WEB = compose_prompt(
+        "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+        "Take all the given resources into account. You should first consider to make the full use of the current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product lists, web resources ] to assist in achieving the goal. Please note that you should consider if the current resources can perfectly satisfy all the aspect of the user's needs, which means you need to be careful to say that you don't need any resources. If you need user's preference, the system will ask for the user's preference in the following; if you need the product lists, the system will search for needed products in the product database in the following; if you need web resources, the system will search for needed web resources through google in the following.",
+        "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+        "Make the best use of the current given resources first. Summarize what do you have in current resource to meet the user's requirement, and why you need or don't need these resources. If you don't need any of them, you should be clear about why the current resources can perfectly satisfy all the aspect of the user's needs."
+    )
+    RESOURCES_PROMPT_WEB_EXPLICIT = compose_prompt(
+        "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+        "Take all the given resources into account. You should first consider to make the full use of the current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product lists, web resources ] to assist in achieving the goal. Please note that you should consider if the current resources can perfectly satisfy all the aspect of the user's needs, which means you need to be careful to say that you don't need any resources. If you need user's preference, the system will ask for the user's preference in the following; if you need the product lists, the system will search for needed products in the product database in the following; if you need web resources, the system will search for needed web resources through google in the following.",
+        "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+        "Make the best use of the current given resources first. Summarize what do you have in current resource to meet the user's requirement, and why you need or don't need these resources. If you don't need any of them, you should explain in detail why the current resources can perfectly satisfy all the aspect of the user's needs."
+    )
+
+    RESOURCES_PROMPT_EXPLICIT = compose_prompt(
+        "Determine the least resources needed for you to generate a response that effectively achieves the goal and addresses the user's needs.",
+        "Take all the given resources into account. You should first consider to make the full use of the current resources, determine whether you need more information from the user preference and from database, then request what you really need among [ user preference, product lists ] to assist in achieving the goal. Please note that you should consider if the current resources can perfectly satisfy all the aspect of the user's needs, which means you need to be careful to say that you don't need any resources. If you need user's preference, the system will ask for the user's preference in the following; if you need the product lists, the system will search for needed products in the product database in the following.",
+        "the goal, instruction, the current resources you should focus on, the context of the conversation, and the user's input",
+        "Make the best use of the current given resources first. Summarize what do you have in current resource to meet the user's requirement, and why you need or don't need these resources. If you don't need any of them, you should explain in detail why the current resources can perfectly satisfy all the aspect of the user's needs."
+    )
 
     PRODUCT_SELECTION_PROMPT = f"Given the goal, context, the key points of each product, and the details of the resource provided, select {4} products that are most necessary for a chatgpt to achieve the goal. Remember you mustn't recommend products that are not given from the following products."
+    
+    PRODUCT_APPEAR_PROMPT = compose_prompt(
+        "Analyze the given context and user's input to determine the user's attitute to all the products appeared during the conversation, then give each product with comments.",
+        'Identify all the products in the context, then figure out if the user have previously consumed, experienced or exhibited feelings towards any product. Extract the names of specific products the user and the system mention and summarize the user\'s attitude towards the product implied by the user\'s response using one or two words.',
+        # 'Identify if the user have previously consumed, experienced or exhibited positive/negative feelings towards any product. Extract the names of specific products the user and the system mention and categorize their sentiment or intent (positive, negative, neutral, already used). If a product is tagged with "already used", it means the recommendation system has already recommended before and is refused or ignored directly/indirectly by the user. Products with "positive" sentiment means the user hold favorable opinion to this product, which can be used to refine and find similar products. Products with "negative" sentiment means the user hold unfavorable opinion to this product, which can be used to aviod similar products. Products with "neutral" sentiment can be interpreted as the user had expressed his opinion towards this product, but is not clear whether it is positive or negative.',
+        "context, user input, and the previous appearance of products",
+        ''
+    )
+
 
 
     "Given the goal, instruction, context, and resources, please select what types of the products are necessary for the recommendation system to achieve the goal."
@@ -150,7 +190,14 @@ class Prompter:
         "Figure out the key features that the products should have according to the goal and the user's preference.",
         "Focus on the user's preference and use your common sense to determine the key features that the products should have.",
         "the goal, instruction, and the user preference.",
-        "Be brief and concise."
+        "Be brief and concise. Please note that user's preference to specific products is also a key feature."
+    )
+    
+    PAST_PRODUCT_PROMPT = compose_prompt(
+        "Figure out whether the past recommended products should be included or excluded in achieving current goal.",
+        "Consider the user's input and analysis the user's needs, then enumerate all the past recommended products and determine whether each of them should be selected for the recommendation system to achieve the goal. If the user have previously consumed, experienced or exhibited negative feelings towards the product, this product is usually excluded. If the user shows positive feelings towards the product, this product is usually included.",
+        "the goal, instruction, user preference, context, the user's input, and the past recommended products",
+        "DO NOT SELECT PRODUCTS THAT DOESN'T APPEAR IN CURRENLY GIVEN PRODUCTS. Tag each of the past recommended products with 'include' or 'exclude'."
     )
 
     "Given the goal, instruction, context, resources and the recommend system's summary of the previous selection, please select the products from the following provided products to add to the previous selection, so that the selection of products can make the recommendation system to achieve the goal. You should also summarize each product's description from what you select by the key point that can response to the user's requests. In the end, you should also determine whether the previous together with your current selection to the products are enough for the system to achieve the goal and all the use requests."
@@ -168,12 +215,26 @@ class Prompter:
     )
     "Given the goal, instruction, context, resources and the recommend system's summary of the previous selection, please select the products from the following provided products to add to the previous selection, so that the selection of products can make the recommendation system to achieve the goal. You should also summarize each product's description from what you select by the key point that can response to the user's requests. In the end, you should also determine whether the previous together with your current selection to the products are enough for the system to achieve the goal and all the use requests."
     PRODUCT_SEARCH_PROMPT = compose_prompt(
-        "Generate a prompt that describes the features of the potential products for the vector database to select the products that are most appropriate and necessary for the recommendation system to achieve the goal.",
+        "Generate a prompt that describes the accurate and detailed features of the potential products for the vector database to select the products that are most appropriate and necessary for the recommendation system to achieve the goal.",
         """
-        Analyze the given resources, especially the user input, user preference and the key features that the selected products. Then accurately summarize the product features that the products should have with detailed information. Finally generate an appropriate prompt for vector database to find out appropriate products.
+        Analyze the given resources, especially the goal, the user input, user preference and the key features that the selected products. Then accurately summarize the product features that the products should have with detailed information. Finally generate an appropriate prompt for vector database to find out appropriate products.
         """,
         "the goal, instruction, user preference, context, the user's input, the key features that the selected products should have.",
         "Be concise when generating the prompt. The detailed product attributes should be reserved.",
+    )
+    PRODUCT_SEARCH_PROMPT_ADV = compose_prompt(
+        "Generate a set of prompts that can guide the vector database in identifying the most appropriate products for the recommendation system. This should consider the goal, user input, user preference, context, and the essential features that selected products should exhibit.",
+        """
+        Based on the given resources:
+
+        1. Enumerate the positive features that the products must have, or specific products. These features should be clear indicators of suitability, so the database can focus on products that possess them.
+        
+        2. Enumerate the negative features or conditions that the products should not exhibit, or specific products. This will allow the database to eliminate products that are contradictory or non-compliant with the desired specifications.
+
+        Make sure to analyze the user's input, context, and other factors to create these detailed and accurate prompts for product filtering.
+        """,
+        "the goal, instruction, user preference, context, the user's input, the key features that the selected products should have.",
+        "The prompts should be concise and clear. It is better to use a set of keywords rather than a long sentence to describe a feature. The detailed product attributes should be reserved. Specific product name should also be taken into account."
     )
 
 
@@ -182,6 +243,13 @@ class Prompter:
         "Examine every part of the product details and the user's preferences to identify any mismatches between the two.",
         "Consider: goal, instruction, user preference, context, user input, product details, and essential product features.",
         "If products only partly satisfy the user's needs, acknowledge the alignment as true. However, clarify which aspects of the user's needs are met and which aren't. If there are factual or logical errors, consider the alignment as false and highlight the discrepancies."
+    )
+    
+    WEB_QUERY_PROMPT = compose_prompt(
+        "Act as an assistant tasked with improving Google search results. Generate THREE Google search queries that are helpful to achieve the goal.",
+        "Use the given resources to generate queries that can be used to search for relevant information on Google in order to achieve the current goal.",
+        "the goal, instruction, user preference, context, the user's input.",
+        "The output should be a list of questions and each should have a question mark at the end"
     )
 
     "Considering the goal and the resources required, generate a question that should ask the user to gather their preferences effectively. This question should aim to obtain crucial information aligned with the goal and enable the chatbot to provide personalized recommendations based on the user's preferences. Ensure that the reply incorporates most relevant information and maintains coherence with the conversation."
@@ -197,8 +265,8 @@ class Prompter:
     RECOMMEND_PROMPT = compose_prompt(
         "Generate a response that provides the most appropriate response tailored to the user's input.",
         "Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation.",
-        "The goal, instruction, user preference, context, the user's input, and the key points of selected products",
-        "You mustn't recommend products that are not given from the following products. If you are not able to achieve any part of the goal even after synthesised all of the resources, don't pretend you can."
+        "The goal, instruction, user preference, context, the user's input, and resources",
+        "You mustn't recommend products that are not given from the following provided products. If you are not able to achieve any part of the goal even after synthesised all of the resources, don't pretend you can."
     )
     RECOMMEND_PROMPT_EXPLICIT = compose_prompt(
         "Generate a response that provides the most appropriate response tailored to the user's input.",

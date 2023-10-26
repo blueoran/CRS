@@ -1,0 +1,32 @@
+{
+    "type": "object",
+    "properties": {
+        "Analysis": {
+            "type": "string",
+            "description": "Your analysis to generate your answer"
+        },
+        "ProductsAppeared": {
+            "type": "array",
+            "description": "List of products appeared in the conversation.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "ProductName": {
+                        "type": "string",
+                        "description": "Name of the product."
+                    },
+                    "Sentiment": {
+                        "type": "string",
+                        "description": "User sentiment or intent related to the product."
+                    },
+                    "Comment": {
+                        "type": "string",
+                        "description": "User's detailed comment related to the product. (may be empty)"
+                    }
+                },
+                "required": ["ProductName", "Sentiment", "Comment"]
+            }
+        }
+    },
+    "required": ["Analysis","ProductsAppeared"]
+}

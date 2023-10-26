@@ -56,7 +56,7 @@ def chat(message, schema_name,file_logger, **kwargs):
         try:
             completion = openai.ChatCompletion.create(
                 messages=message,
-                model=kwargs.get("model", "gpt-3.5-turbo"),
+                model=kwargs.get("model", "gpt-3.5-turbo-0613"),
                 temperature=kwargs.get("temperature", 0),
                 top_p=kwargs.get("top_p", 1),
                 n=kwargs.get("n", 1),

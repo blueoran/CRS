@@ -1,0 +1,25 @@
+{
+    "type": "object",
+    "properties": {
+        "TaggedProducts": {
+            "type": "array",
+            "description": "List of products pastly appeared in the conversation. DO NOT TAG PRODUCTS THAT DOESN'T APPEAR IN CURRENLY GIVEN PRODUCTS",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "Name": {
+                        "type": "string",
+                        "description": "Name of the product."
+                    },
+                    "Tag": {
+                        "type": "string",
+                        "enum": ["include","exclude"],
+                        "description": "Whether the product should be included or excluded in achieving current goal. If the user have previously consumed, experienced or exhibited negative feelings towards the product, this product is usually excluded. If the user shows positive feelings towards the product, this product is usually included."
+                    }
+                },
+                "required": ["ProductName", "Tag"]
+            }
+        }
+    },
+    "required": ["TaggedProducts"]
+}

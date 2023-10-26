@@ -1,6 +1,11 @@
 {
     "type": "object",
     "properties": {
+        "summary":{
+            "type":"string",
+            "additionalProperties": false,
+            "description":"Summary of the current resource to meet the user's requirement."
+        },
         "need_user_preference":{
             "type":"boolean",
             "additionalProperties": false,
@@ -10,7 +15,12 @@
             "type":"boolean",
             "additionalProperties": false,
             "description": "Given the current resources, whether the system needs product list and details to help to achieve its goal."
+        },
+        "explaination":{
+            "type":"string",
+            "additionalProperties": false,
+            "description":"Why you need or don't need these resources."
         }
-},
-    "required": ["need_user_preference", "need_product_lists"]
+    },
+    "required": ["need_user_preference", "need_product_lists", "summary", "explaination"]
 }
