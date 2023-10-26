@@ -30,6 +30,7 @@ log_level=logging.DEBUG
 explicit=False
 verbose=False
 testcase=None
+web = True
 api_init()
 
 product_dict = {
@@ -63,7 +64,7 @@ def create_instance(user_id):
     }
     user_instances[user_id]['evaluator'] = Evaluator(file_logger, user_instances[user_id]['product'].product_type_set, verbose)
     user_instances[user_id]['rec'] = Agent(user_instances[user_id]['product'], user_instances[user_id]['preference'],
-                                           user_instances[user_id]['evaluator'], file_logger, explicit, verbose)
+                                           user_instances[user_id]['evaluator'], file_logger, explicit, verbose,web)
 
     user_history[user_id] = []
     user_context[user_id] = []
@@ -97,7 +98,7 @@ def index():
             copied_user_instances = copy(user_instances[user_id]['rec'])
             worker_thread = threading.Thread(target=worker_function, args=(user_id, user_input))
             worker_thread.start()
-            worker_thread.join(timeout=50)  # Set a timeout for the thread execution
+            worker_thread.join(timeout=75)  # Set a timeout for the thread execution
             if worker_thread.is_alive():
                 # Handle the timeout here
                 result_rec = f"Sorry, the response is taking too long. Please try again."

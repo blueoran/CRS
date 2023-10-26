@@ -77,13 +77,13 @@ class Prompter:
     "In order to provide accurate recommendations, your task is to determine if the given product types align with the user's desired recommendations. Your should assist the system in verifying whether the given product types in the database can support the user's goal effectively.\n\nTo accomplish this, please take the following steps:\n1. Analyze the user's preferences and identify the specific product types they desire.\n2. Evaluate the existing product types in the database and other available resources.\n3. Determine whether the product types requested by the user are present in the database.\n\nPlease perform these steps to ensure the system can accurately assess whether the recommendation system is capable for the user's desired recommendations and then provide an answer. You also should explain your reasons for this answer."
     CAPABLE_RECOMMEND_RATING_PROMPT = compose_prompt(
         "Determine if the product types that the system can serve align with the user's desired recommendations.",
-        "Enumerate each product type, analyze whether it is appropriate to recommend the user with this product type. If all of the product types that the system serve are not appropriate, then the recommendation system is not capable for the user's desired recommendations.",
+        "Enumerate each product type, analyze whether it is appropriate to recommend the user with this product type. If all of the product types that the system serve are not appropriate, then the recommendation system is not capable for the user's desired recommendations. You also have the ability to search through the web only about the product-relevant information.",
         "the product types that the system can serve, the user's input and the context of the conversation",
         None
     )
     CAPABLE_RECOMMEND_RATING_PROMPT_EXPLICIT = compose_prompt(
         "Determine if the product types that the system can serve align with the user's desired recommendations.",
-        "Enumerate each product type, analyze whether it is appropriate to recommend the user with this product type. If all of the product types that the system serve are not appropriate, then the recommendation system is not capable for the user's desired recommendations.",
+        "Enumerate each product type, analyze whether it is appropriate to recommend the user with this product type. If all of the product types that the system serve are not appropriate, then the recommendation system is not capable for the user's desired recommendations. You also have the ability to search through the web only about the product-relevant information.",
         "the product types that the system can serve, the user's input and the context of the conversation",
         "Please explain your reasons for this answer."
     )
@@ -266,13 +266,13 @@ class Prompter:
         "Generate a response that provides the most appropriate response tailored to the user's input.",
         "Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation.",
         "The goal, instruction, user preference, context, the user's input, and resources",
-        "You mustn't recommend products that are not given from the following provided products. If you are not able to achieve any part of the goal even after synthesised all of the resources, don't pretend you can."
+        "You mustn't recommend products that are not given from the following provided products. You should be precise, if you are not able to achieve some part of the goal even after synthesised all of the resources, you need to notify the user about this, don't pretend you can."
     )
     RECOMMEND_PROMPT_EXPLICIT = compose_prompt(
         "Generate a response that provides the most appropriate response tailored to the user's input.",
         "Ensure that the reply incorporates most relevant information, aligns with the user's preferences, and maintains coherence with the conversation.",
         "The goal, instruction, user preference, context, the user's input, and the key points of selected products",
-        "You mustn't recommend products that are not given from the following products. If you are not able to achieve any part of the goal even after synthesised all of the resources, don't pretend you can. Tell me your thoughts when generating this response."
+        "You mustn't recommend products that are not given from the following provided products. You should be precise, if you are not able to achieve some part of the goal even after synthesised all of the resources, you need to notify the user about this, don't pretend you can. Tell me your thoughts when generating this response."
     )
 
 
