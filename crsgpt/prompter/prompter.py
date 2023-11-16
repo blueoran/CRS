@@ -315,6 +315,15 @@ class TestPrompter:
             "The circumstance, example conversation, the context, the product types that the system can serve, and the output from the recommendation system.",
             "ONLY USE THE PRODUCT TYPES THAT THE SYSTEM CAN SERVE. Be aware of the process of the communication and make the conversation follow the circumstance setting, and the context of the conversation. Don't make the whole chat too long, if you think the test should reach to end, only say 'exit' to end the conversation."
         )
+        
+    Goal_TEST_PROMPT = \
+        SYSTEM_PROMPT + '\n' + \
+        compose_prompt(
+            "Use a pre-selected product as a target recommendation, and communicate with short sentences with the system step by step to make it recommend this product to you.",
+            "Summarize the features of the pre-selected product, and use the feature from coarse to detail to communicate with the system as if you were a real user with specific needs, concerns, or questions.",
+            "the context, the detail of pre-selected product, and the output from the recommendation system.",
+            "Don't directly tell the system the name of the product or all of the features, but indirectly show very very small part of the features through the preference. Be aware of the process of the communication. Be brief and use only short sentence during communication."
+        )
 
     TEST_CASES = {
 "NORMAL":
@@ -343,9 +352,9 @@ System: You're welcome! Enjoy the movie, and if you ever need more recommendatio
 In this scenario, the user's request was straightforward, and the system responded by asking clarifying questions to better understand the user's preferences. Once the user's preference for drama movies and Tom Hanks was established, the system provided a relevant recommendation and additional information about the movie. The user accepted the recommendation and expressed appreciation, concluding the conversation on a positive note.""",
 
 "UPDATE_PERFORMANCE":
-"""Circumstance: User Updating Implicit Preferences
+"""Circumstance: User Updating Preferences
 Description:
-Implicit preferences refer to user preferences that can be inferred from their behavior, actions, or historical data, rather than explicitly stated by the user. In this circumstance, you are testing your conversational recommendation system's ability to adapt to changes in a user's implicit preferences. Users may not always explicitly update their preferences, but their behavior and interactions with the system can indicate shifts in their interests.
+In this circumstance, you are testing your conversational recommendation system's ability to adapt to changes in a user's preferences. Users may not always explicitly update their preferences, but their behavior and interactions with the system can indicate shifts in their interests.
 
 Example Conversation:
 
@@ -377,25 +386,17 @@ Description: In this scenario, the user is interested in a specific product and 
 
 Example Conversation:
 
-User: Hi there! I'm looking into buying a new smartphone. Can you give me more details about the latest model from "TechGizmo"?
+User: Hi there! I'm looking into buying a new smartphone. Can you give me more details about the latest model from "Samsung"?
 
-System: Of course! I'd be happy to help. The latest model from TechGizmo is the "GizmoPhone X." It features a 6.5-inch OLED display with a resolution of 1080 x 2340 pixels. The phone is powered by a Snapdragon 8-series processor with 8GB of RAM and comes in storage options of 128GB and 256GB. It has a dual-camera setup with a 48MP main sensor and a 16MP ultra-wide sensor. The battery capacity is 4000mAh and supports fast charging.
+System: Of course! I'd be happy to help. The latest model from Samsung is the "Samsung X." It features a 6.5-inch OLED display with a resolution of 1080 x 2340 pixels. The phone is powered by a Snapdragon 8-series processor with 8GB of RAM and comes in storage options of 128GB and 256GB.
 
 User: That sounds interesting. How does the camera perform? I enjoy taking photos.
 
-System: The camera system on the GizmoPhone X is quite impressive. The 48MP main sensor uses pixel-binning technology to capture vibrant and detailed photos even in low light conditions. The AI-powered software helps optimize settings for various scenarios like portraits, landscapes, and night shots. The 16MP ultra-wide sensor provides a wider field of view, making it great for capturing scenic shots and group photos.
+System: The camera system on the Samsung X is quite impressive. The 48MP main sensor uses pixel-binning technology to capture vibrant and detailed photos even in low light conditions.
 
 User: Nice. And what about the battery life? I use my phone throughout the day.
 
-System: The 4000mAh battery on the GizmoPhone X is designed to provide all-day usage on a single charge. The combination of hardware and software optimizations helps extend battery life. Additionally, the phone supports fast charging, allowing you to quickly top up your battery when needed.
-
-User: Are there any alternatives to the GizmoPhone X that I should consider?
-
-System: Certainly. If you're open to alternatives, you might want to check out the "CompetitorPhone Y." It offers a similar display size and resolution, along with a comparable camera system. However, it has a slightly larger battery capacity at 4200mAh. Another option is the "AlternateTech Z," which boasts a higher resolution display and a unique camera feature for low-light photography. It's essential to weigh these options based on your preferences and priorities.
-
-User: Thanks for the detailed information. One last question: Does the GizmoPhone X support 5G connectivity?
-
-System: Yes, the GizmoPhone X supports 5G connectivity, allowing you to experience faster download and streaming speeds in areas with 5G coverage.
+System: The 4000mAh battery on the Samsung X is designed to provide all-day usage on a single charge. The combination of hardware and software optimizations helps extend battery life.
 
 User: Perfect. That helps a lot in making my decision. I appreciate your assistance!
 
@@ -412,21 +413,13 @@ Example Conversation:
 
 User: Hi there! I'm looking for a new smartphone. I'm really into photography and I travel a lot, so a good camera and long battery life are important to me.
 
-System: Hello! It sounds like you have a passion for photography and need a smartphone that can keep up with your travel adventures. I'd recommend checking out the "SnapPixel Pro." It boasts a cutting-edge camera with advanced low-light capabilities, perfect for capturing stunning photos during your travels. Additionally, it features an extended battery life that can last up to two days, ensuring you won't miss any photo opportunities. The "SnapPixel Pro" could be an excellent match for your preferences.
-
-User: Oh, that's interesting! Do you know if it has a large internal storage capacity? I tend to store a lot of high-resolution photos.
-
-System: Absolutely! The "SnapPixel Pro" comes with ample storage, offering a base capacity of 256GB, which should provide plenty of space for your high-resolution photos and videos. And if you ever need more space, it also supports expandable storage via microSD cards.
-
-User: That sounds great! One last thing, I'm also concerned about the durability of the phone. I've had accidents in the past.
-
-System: I understand your concern. The "SnapPixel Pro" is designed with durability in mind. It features a reinforced Gorilla Glass Victus display that's highly resistant to scratches and cracks. Additionally, the device has an IP68 rating, making it water and dust resistant. So, you can continue your adventures worry-free, knowing that your smartphone is built to withstand accidental bumps and splashes.
+System: Hello! It sounds like you have a passion for photography and need a smartphone that can keep up with your travel adventures. I'd recommend checking out the "Samsung Galaxy." It boasts a cutting-edge camera with advanced low-light capabilities, perfect for capturing stunning photos during your travels. Additionally, it features an extended battery life that can last up to two days, ensuring you won't miss any photo opportunities. The "Samsung Galaxy" could be an excellent match for your preferences.
 
 User: That's exactly what I need. Thanks for the recommendation and all the information!
 
-System: You're welcome! If you have any more questions or need further assistance in the future, feel free to ask. Happy photographing and safe travels with your new "SnapPixel Pro"!
+System: You're welcome! If you have any more questions or need further assistance in the future, feel free to ask. Happy photographing and safe travels with your new "Samsung Galaxy"!
 
-In this example conversation, the recommendation system identifies the user's preferences for photography, travel, battery life, camera quality, storage capacity, and durability. It then generates a tailored summary of the "SnapPixel Pro" smartphone, highlighting its features that align with the user's preferences. The system addresses the user's specific concerns and provides relevant information, demonstrating its ability to understand and cater to the user's preference view.""",
+In this example conversation, the recommendation system identifies the user's preferences for photography, travel, battery life, camera quality, storage capacity, and durability. It then generates a tailored summary of the "Samsung Galaxy" smartphone, highlighting its features that align with the user's preferences. The system addresses the user's specific concerns and provides relevant information, demonstrating its ability to understand and cater to the user's preference view.""",
 
 "COMPARE_PRODUCT":
 """Circumstance: Comparing Products from User's Preference View
@@ -678,4 +671,6 @@ In this example, the user starts by seeking a book recommendation, but then gets
 
 
 SCORE_PROMPT = \
-"Please assess the conversation and provide a score from 1 to 10, evaluating the overall performance of the conversational recommendation system. Consider the coherence, relevance, and helpfulness of the responses exchanged between the user and the system. A score of 1 would indicate extremely poor performance with responses that are incoherent, irrelevant, and unhelpful. A score of 10 would indicate exceptional performance with highly coherent, relevant, and helpful responses that enrich the user's experience. Please provide detailed reasoning for your chosen score to support your evaluation."
+"Please assess the conversation and provide a score from 0 to 10, evaluating the overall performance of the conversational recommendation system. Consider the coherence, relevance, and helpfulness of the responses exchanged between the user and the system. Also you should take specific testcase circumstance into consideration. A score of 0 would indicate extremely poor performance with responses that are incoherent, irrelevant, and unhelpful. A score of 10 would indicate exceptional performance with highly coherent, relevant, and helpful responses that enrich the user's experience."
+SCORE_PROMPT_EXPLICIT = \
+"Please assess the conversation and provide a score from 0 to 10, evaluating the overall performance of the conversational recommendation system. Consider the coherence, relevance, and helpfulness of the responses exchanged between the user and the system. Also you should take specific testcase circumstance into consideration. A score of 0 would indicate extremely poor performance with responses that are incoherent, irrelevant, and unhelpful. A score of 10 would indicate exceptional performance with highly coherent, relevant, and helpful responses that enrich the user's experience. Please provide detailed reasoning for your chosen score to support your evaluation."

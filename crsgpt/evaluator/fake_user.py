@@ -1,4 +1,5 @@
 from crsgpt.communicate.communicate import *
+import random
 
 
 FAKE_USER_PROMPT_NORMAL = "You are designed to help and train a salesman to handle different situations during recommendation. Your goal is to ask for recommendations on a specific topic to the salesman. You can start the conversation with a general inquiry or a specific request for recommendations. Interact with the recommendation system as if you are a user looking for helpful suggestions. Feel free to ask follow-up questions or seek clarification if needed. You are curious and open to exploring various recommendations and options. You want to evaluate the salesman's performance and effectiveness in handling various scenarios and inquiries. You were a real user with specific needs, concerns, or questions. Feel free to ask about different features, request assistance, or seek information. Please note that the role \"user\" is the salesman you are helping with. DO NOT SAY YOU ARE A AI LANGUAGE MODEL"
@@ -57,7 +58,7 @@ class Tester:
         self.verbose=verbose
         self.testcase=testcase
         self.context=[]
-        self.product_types=product_types
+        self.product_types=random.choice(product_types)
     def interactive(self,agent_response):
         if agent_response!="":
             self.context.append(f"System: {agent_response}")
@@ -72,11 +73,51 @@ class Tester:
                     {'attribute':'System Output','content':self.context[-1] if len(self.context)>=1 else None}
                 )}
             ),
-            "tester","mimic_user_interaction",
+            "tester",temperature=1.0,model="gpt-4",
             max_tokens=60
         )
-        if user_mimic.startswith("User: "):
-            user_mimic=user_mimic[6:]
-        self.context.append(f"User: {user_mimic}")
+        if user_mimic['should_exit'] is True:
+            user_mimic = "exit"
+        else:
+            user_mimic = user_mimic['mimic_user_interaction']
+            if user_mimic.startswith("User: "):
+                user_mimic=user_mimic[6:]
+            self.context.append(f"User: {user_mimic}")
         return user_mimic
+
+
+class GoalTester:
+    def __init__(self,logger,verbose,product):
+        self.file_logger=logger
+        self.verbose=verbose
+        self.context=[]
+        idx = random.randint(0,len(product.product_info)-1)
+        ifo = product.product_info.iloc[idx]
+        self.product=f'Type: {ifo["type"]}; Description: {ifo["description"]}'
+        self.file_logger.info(f"Goal Tester Product: {self.product}")
+    def interactive(self,agent_response):
+        if agent_response!="":
+            self.context.append(f"System: {agent_response}")
+        user_mimic = general_json_chat(
+            self.file_logger,self.verbose,
+            compose_messages(
+                {'s':compose_system_prompts(
+                    {'prompt':TestPrompter.Goal_TEST_PROMPT},
+                    {'attribute':'Context','content':self.context[:-1]},
+                    {'attribute':'Your Pre-Selected Product Detail','content':self.product},
+                    {'attribute':'System Output','content':self.context[-1] if len(self.context)>=1 else None}
+                )}
+            ),
+            "goal_tester",temperature=1.0,model="gpt-4",
+            max_tokens=100
+        )
+        if user_mimic['success_recommend'] is True:
+            user_mimic = "success"
+        else:
+            user_mimic = user_mimic['mimic_user_interaction']
+            if user_mimic.startswith("User: "):
+                user_mimic=user_mimic[6:]
+            self.context.append(f"User: {user_mimic}")
+        return user_mimic
+
 

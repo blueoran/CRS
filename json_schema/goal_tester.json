@@ -1,0 +1,17 @@
+{
+
+    "type": "object",
+    "properties": {
+        "mimic_user_interaction": {
+            "type": "string",
+            "description": "Communicate with the recommendation system as if you are a real user with pre-selected product detail in your mind",
+            "additionalProperties": false
+        },
+        "success_recommend": {
+            "type": "boolean",
+            "description": "Whether the system successfully recommends the pre-selected product",
+            "additionalProperties": false
+        }
+    },
+        "required": ["mimic_user_interaction", "success_recommend"]
+}

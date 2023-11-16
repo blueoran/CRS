@@ -6,7 +6,12 @@
             "type": "string",
             "description": "Interaction with the recommendation system as if you are a real user. If you think the test case reaches to end, only say 'exit' to end the conversation.",
             "additionalProperties": false
+        },
+        "should_exit": {
+            "type": "boolean",
+            "description": "If the test goes to the end and exit.",
+            "additionalProperties": false
         }
     },
-        "required": ["mimic_user_interaction"]
+        "required": ["mimic_user_interaction", "should_exit"]
 }

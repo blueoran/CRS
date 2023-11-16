@@ -6,7 +6,11 @@
             "type": "integer",
             "description":"performance score",
             "additionalProperties": false
+        },
+        "score_explanation": {
+            "type": "string",
+            "additionalProperties": false
         }
     },
-        "required": ["score"]
+        "required": ["score","score_explanation"]
 }

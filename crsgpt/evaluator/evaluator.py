@@ -27,26 +27,35 @@ class Evaluator:
         return result
 
 class Scorer:
-    def __init__(self,logger,verbose,context):
+    def __init__(self,logger,verbose,context,explicit):
         self.file_logger=logger
         self.verbose=verbose
         self.context=context
+        self.explicit=explicit
 
-    def score(self):
+    def score(self,testcase=None):
         evaluation = general_json_chat(
             self.file_logger,self.verbose,
             compose_messages(
                 {'s':compose_system_prompts(
-                    {'prompt':SCORE_PROMPT},
+                    {'prompt':SCORE_PROMPT_EXPLICIT if self.explicit  else SCORE_PROMPT},
+                    {'attribute':'Testcase Description','content':TestPrompter.TEST_CASES[testcase][:TestPrompter.TEST_CASES[testcase].find('Example')]} if testcase is not None else {},
                     {'attribute':'Conversation','content':self.context},
                 )}
             ),
-            "scorer"
+            "scorer_explicit" if self.explicit is True else "scorer", model = "gpt-4"
         )
-        if type(evaluation) == str:
-            score=find_first_number(evaluation)
-            explanation=evaluation[evaluation.find("score_explanation")+len("score_explanation: ")+3:-2]
+        if self.explicit:
+            if type(evaluation) == str:
+                score=find_first_number(evaluation)
+                explanation=evaluation[evaluation.find("score_explanation")+len("score_explanation: ")+3:-2]
+            else:
+                score = evaluation["score"]
+                explanation = evaluation["score_explanation"]
         else:
-            score = evaluation["score"]
-            explanation = evaluation["score_explanation"]
+            try:
+                score = evaluation["score"]
+            except:
+                score = evaluation
+            explanation = ""
         return score, explanation

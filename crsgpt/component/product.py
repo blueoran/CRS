@@ -13,7 +13,7 @@ from openai.embeddings_utils import (
     distances_from_embeddings,
     indices_of_nearest_neighbors_from_distances,
 )
-
+import queue
 
 
 
@@ -34,7 +34,7 @@ class Product:
         self.update_product=update_product
         self.verbose=verbose
         self.file_to_title=files
-        self.past_selected_products=set()
+        self.past_selected_products=[]
         self.selected_products = []
 
         self.files_pandas=[]
@@ -276,8 +276,9 @@ class Product:
         selected_description = {}
         self.selected_products = self.filter_products(goal,instruction,preference,context,product_features,selected_products_index,past_product_selection)
         self.file_logger.info(f"Selected products: {self.product_info.iloc[self.selected_products]}")
+        
         # with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        #     futures = [executor.submit(self.process_selected_product, goal, instruction, preference, context, idx, product_features) for idx in selected_products]
+        #     futures = [executor.submit(self.process_selected_product, goal, instruction, preference, context, idx, product_features) for idx in self.selected_products]
 
         # for future in futures:
         #     res = future.result()
@@ -289,7 +290,9 @@ class Product:
         return selected_description
     def update_past_selected_products(self):
         for idx in self.selected_products:
-            self.past_selected_products.add(self.product_info["name"].iloc[idx])
+            name = self.product_info["name"].iloc[idx]
+            if name not in self.past_selected_products[:-2*self.top_k]:
+                self.past_selected_products.append(name)
     def select_products_large(self,goal,instruction,preference,context):
         selected_product_type=self.select_product_type(goal,instruction,preference,context)
         filtered_product=self.product_info[self.product_info['type'].isin(selected_product_type)]

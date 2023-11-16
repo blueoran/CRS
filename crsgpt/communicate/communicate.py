@@ -17,6 +17,8 @@ def api_init():
 def compose_system_prompts(*prompts):
     final_prompt=""
     for p in prompts:
+        if p is None or len(p)==0:
+            continue
         if 'prompt' in p.keys():
             final_prompt+=f"{p['prompt']}\n"
         else:

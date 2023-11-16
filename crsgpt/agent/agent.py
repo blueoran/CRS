@@ -23,7 +23,8 @@ class Agent:
         file_logger,
         explicit=False,
         verbose=False,
-        web=False
+        test=False,
+        web=False,
     ):
         self.file_logger=file_logger
 
@@ -34,6 +35,7 @@ class Agent:
         self.products=products
         self.preference=preference
         self.verbose=verbose
+        self.test=test
         self.web=web
         if self.web:
             self.web_resource = WEB(file_logger,verbose)
@@ -215,4 +217,7 @@ class Agent:
         self.file_logger.info(f"System: {self.output}")
         self.file_logger.info(f"Time elapsed: {time.time()-start_time}")
         print(f"Time elapsed: {time.time()-start_time}")
-        return self.output
+        if self.test:
+            return self.output, time.time()-start_time
+        else:
+            return self.output
