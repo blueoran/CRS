@@ -1,84 +1,46 @@
 # Conversational Recommender System using ChatGPT
 
 ## Requirements
-
-```
-python=3.10
-pandas
-numpy
-openai
-fuzzywuzzy
-jsonschema
-flask=2.3.2
-```
+- Using `python=3.10.9`
+- Install the requirements by running the following command under `CRS` directory:
+  ```bash
+  $ pip install -r requirements.txt
+  ```
+- List api-keys that you want the program to use in `api.cfg`
+- Move your product data in `.csv` format in `data`, modify the `product_dict` in `main.py` to include the products you want to recommend. The key is the file path and the value is the column name that represents the product's name.
 
 ## Usage
 
 under `CRS` directory:
 
 ```bash
-$ python main.py (--verbose) (--explicit)
+$ python main.py
 ```
 
-### Arguments
-```bash
-options:
-  -h, --help            show this help message and exit
-  --top_K TOP_K         top K products to recommend
-  --api_key API_KEY     openai api key
-  --log_file LOG_FILE   log file path
-  --update_product      whether to update product details
-  --product_detail_path PRODUCT_DETAIL_PATH
-                        product details json save path
-  --log_level LOG_LEVEL
-                        log level
-  --explicit            whether to explicitly show the thinking of the recommendation gpt
-  --verbose             whether to show the process of the recommendation
+### Options
+#### General Options
+- `-h, --help`: Show this help message and exit.
+- `--log_file LOG_FILE`: Define the log file path. The default path is "./logs/new.log".
+- `--update_product`: Flag to decide whether to update product details or not. This is not enabled by default.
+- `--log_level LOG_LEVEL`: Set the logging level. Default is set to DEBUG.
+- `--explicit`: Enable this to explicitly show the thinking process of the recommendation GPT. This is not enabled by default.
+- `--verbose`: Enable this to show the detailed process of the recommendation. This is not enabled by default.
 
-  --pure_gpt            whether to use pure gpt to generate response for comparison
-  --product_gpt         whether to use product gpt to generate response for comparison
+#### Comparison Options
+- `--pure_gpt`: Enable to use a pure GPT model for generating response for comparison.
+- `--product_gpt`: Enable to use a product-specific GPT model for generating response for comparison.
+- `--web`: Enable this to activate web-based features.
+- `--hallucination`: Enable this to include hallucination-detection features in the GPT responses.
 
-```
+#### Additional Options
+- `--top_K TOP_K`: Specify the top K products to recommend. The default value is 5.
+- `--head_K`: Specify the head K products in the system. The default value is 50.
+- `--embedding_cache_path`: Set the path for caching embeddings. The default is `./data/recommendations_embeddings_cache.pkl`.
+- `--testcase`: Provide specific test cases. Default is None.
 
-> Note: Type `Ctrl+Z` to suspend the process then kill it mannuanly if it stuck during the process instead of `Ctrl+C`, as the Error Handling part has not been perfectly implemented yet.
 
 ## Deployment
 The web is based on Flask. To deploy the web, run the following command under `CRS` directory:
 ```bash
 $ python app.py
-```
-
-P.S. I used ngrok as reverse proxy to expose my local server to the Internet.
-
-### Interface
-
-In `app.py`, The recommendation agent instance is created for each user, distinguished by the user's IP address. Each instance is saved in the `user_instances` dictionary.
-
-`create_instance(user_id)`: initialize a user instance and save it to the user_instances dictionary
-
-
-```python
-user_instances (Dict): {
-  user_id: {
-    'rec':Agent,
-
-    'log_file':file_logger,
-    'product':Product,
-    'preference':Preference,
-    'gpt_rec':PureGPT,
-    'evaluator':Evaluator,
-    ......
-  }
-}
-```
-
-We can use `Agent.user_interactive(user_input)` to get the response of the recommendation agent. The `user_history` dictionary is used to save the conversation history of each user to show in the web page as shown in the following code:
-
-
-```python
-if user_id not in user_instances:
-    create_instance(user_id)
-user_history[user_id].append({'role': 'user', 'content': f'[[User]]: {user_input}'})
-result_rec = user_instances[user_id]['rec'].user_interactive(user_input)
-user_history[user_id].append({'role': 'class_rec', 'content': f'[[Recommender]]: {result_rec}'})
 ```

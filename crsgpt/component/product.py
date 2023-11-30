@@ -26,7 +26,8 @@ class Product:
                  top_k,
                  update_product,
                  verbose,
-                 files):
+                 files,
+                 hallucination=False):
         self.head_k=head_k
         self.top_k=top_k
         self.file_logger=file_logger
@@ -34,6 +35,7 @@ class Product:
         self.update_product=update_product
         self.verbose=verbose
         self.file_to_title=files
+        self.hallucination=hallucination
         self.past_selected_products=[]
         self.selected_products = []
 
@@ -277,15 +279,18 @@ class Product:
         self.selected_products = self.filter_products(goal,instruction,preference,context,product_features,selected_products_index,past_product_selection)
         self.file_logger.info(f"Selected products: {self.product_info.iloc[self.selected_products]}")
         
-        # with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        #     futures = [executor.submit(self.process_selected_product, goal, instruction, preference, context, idx, product_features) for idx in self.selected_products]
+        if self.hallucination:
+        
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = [executor.submit(self.process_selected_product, goal, instruction, preference, context, idx, product_features) for idx in self.selected_products]
 
-        # for future in futures:
-        #     res = future.result()
-        #     selected_description.update(res)
+            for future in futures:
+                res = future.result()
+                selected_description.update(res)
+        else:
 
-        for idx in self.selected_products:
-            selected_description[self.product_info["name"].iloc[idx]]=f'{self.product_info["description"].iloc[idx]}\n'
+            for idx in self.selected_products:
+                selected_description[self.product_info["name"].iloc[idx]]=f'{self.product_info["description"].iloc[idx]}\n'
 
         return selected_description
     def update_past_selected_products(self):

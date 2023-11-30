@@ -3,3 +3,7 @@ logs/*
 .vscode/
 refs/
 report/
+notes/
+api.cfg
+misc/
+data/data/

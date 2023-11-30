@@ -22,6 +22,7 @@ parser.add_argument('--testcase', nargs='*',  default=None,help='testcase')
 parser.add_argument('--product_gpt', action='store_true')
 parser.add_argument('--pure_gpt', action='store_true')
 parser.add_argument('--web', action='store_true')
+parser.add_argument('--hallucination', action='store_true')
 
 args = parser.parse_args()
 
@@ -34,7 +35,7 @@ product_dict = {
 
 def main_loop(testcase=None):
     product=Product(args.head_K,file_logger,args.embedding_cache_path,args.top_K,
-                    args.update_product,args.verbose,product_dict)
+                    args.update_product,args.verbose,product_dict,args.hallucination)
     preference=Preference(file_logger,args.verbose)
     evaluator=Evaluator(file_logger,product.product_type_set,args.verbose)
     rec=Agent(product,preference,evaluator,file_logger,args.explicit,args.verbose,True,args.web)
